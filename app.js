@@ -199,6 +199,11 @@ function renderEvents() {
                             <span style="color: ${catInfo.color}; font-weight: 800; font-size: 1rem">${e.price}</span>
                         </div>
                     </div>
+                    <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lng}', '_blank')" 
+                            style="margin-top: 15px; width: 100%; padding: 10px; border-radius: 10px; border: none; background: #4285F4; color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        Itinéraire Google Maps
+                    </button>
                 </div>
             `;
             grid.appendChild(card);
