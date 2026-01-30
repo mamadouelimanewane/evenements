@@ -1,7 +1,6 @@
-// ===================================
-// CONFIGURATION DES CATÉGORIES
-// ===================================
-const categories = [
+// Charger les catégories (LocalStorage en priorité)
+const savedCategories = JSON.parse(localStorage.getItem('dakarevents_categories'));
+const categories = savedCategories || [
     { id: 'culture', label: 'Arts & Culture', color: '#FF8C00', icon: '🎭' },
     { id: 'sports', label: 'Sports & Bien-être', color: '#2ECC71', icon: '🏃' },
     { id: 'gastronomie', label: 'Gastronomie', color: '#E74C3C', icon: '🍽️' },
@@ -29,7 +28,7 @@ const quartiers = [
 // ===================================
 // ÉTAT GLOBAL
 // ===================================
-let eventsData = [];
+// eventsData est déjà initialisé en ligne 46
 let map = null;
 let markers = [];
 let userLocation = null;
@@ -44,7 +43,10 @@ let currentView = 'grid';
 // ===================================
 // GÉNÉRATION DE DONNÉES
 // ===================================
+let eventsData = JSON.parse(localStorage.getItem('dakarevents_events')) || [];
+
 function generateSampleData() {
+    if (eventsData.length > 0) return; // Ne pas générer si des données admin existent
     const titles = {
         culture: ["Exposition Art", "Théâtre Sorano", "Slam Dakar", "Ciné Nomade"],
         sports: ["Yoga Plage", "Marathon Dakar", "Lutte Traditionnelle", "Surf Ngor"],
@@ -181,13 +183,20 @@ function renderEvents() {
     const grid = document.getElementById('gridView');
     if (grid) {
         grid.innerHTML = '';
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-dim);">Aucun événement trouvé.</div>';
+        }
         filtered.forEach(e => {
             const catInfo = categories.find(c => c.id === e.category) || categories[0];
             const card = document.createElement('div');
             card.className = 'event-card';
             card.style.borderTop = `4px solid ${catInfo.color}`;
+
+            // Image personnalisée ou dégradé par défaut
+            const bgStyle = e.image ? `url('${e.image}')` : `linear-gradient(135deg, ${catInfo.color}22, ${catInfo.color}44)`;
+
             card.innerHTML = `
-                <div class="card-img" style="background: linear-gradient(135deg, ${catInfo.color}22, ${catInfo.color}44)">
+                <div class="card-img" style="background-image: ${bgStyle}; background-size: cover; background-position: center;">
                     <span class="card-badge" style="background: ${catInfo.color}">${catInfo.icon} ${catInfo.label}</span>
                 </div>
                 <div class="card-info">
