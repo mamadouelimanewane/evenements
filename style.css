@@ -390,11 +390,12 @@ body {
     border-radius: 0 !important;
 }
 
-#maximizeMapControl {
+#maximizeMapControl,
+#mapLocateBtn {
     width: 44px;
     height: 44px;
-    background: var(--primary);
-    border: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     border-radius: 12px;
     color: white;
     cursor: pointer;
@@ -402,6 +403,41 @@ body {
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+}
+
+#mapLocateBtn:hover,
+#maximizeMapControl:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    transform: scale(1.05);
+}
+
+.user-pos-pulse {
+    background: #3498DB;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 rgba(52, 152, 219, 0.4);
+    animation: pulse-blue 2s infinite;
+}
+
+@keyframes pulse-blue {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 15px rgba(52, 152, 219, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+    }
 }
 
 /* Leaflet Overrides */

@@ -89,7 +89,7 @@
                 <!-- Map View -->
                 <section id="mapView" class="map-view-container" style="display: none;">
                     <div id="mainMap"></div>
-                    
+
                     <!-- Map Legend & Filters Overlays -->
                     <div class="map-overlay-legend" id="mapLegend">
                         <h4>Types d'Événements</h4>
@@ -99,6 +99,13 @@
                     </div>
 
                     <div class="map-overlay-controls">
+                        <button id="mapLocateBtn" title="Ma Position">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                        </button>
                         <button id="maximizeMapControl" title="Agrandir / Plein Écran">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">

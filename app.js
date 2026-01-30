@@ -199,7 +199,7 @@ function renderEvents() {
 function initMap() {
     if (map) return;
     map = L.map('mainMap', { zoomControl: false }).setView([14.71, -17.48], 12);
-    
+
     // Style de carte plus vibrant et clair (OpenStreetMap France ou Humanitarian)
     L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
         attribution: 'OpenStreetMap France',
@@ -211,8 +211,9 @@ function initMap() {
     // Initialiser la légende interactive
     setupMapLegend();
 
-    // Event listener pour le bouton plein écran
+    // Event listeners pour les contrôles de la carte
     document.getElementById('maximizeMapControl').onclick = toggleMapFullscreen;
+    document.getElementById('mapLocateBtn').onclick = handleLocation;
 }
 
 const mapFilters = new Set(categories.map(c => c.id));
@@ -246,7 +247,7 @@ function setupMapLegend() {
 function toggleMapFullscreen() {
     const container = document.getElementById('mapView');
     container.classList.toggle('map-fullscreen');
-    
+
     // Forcer la carte à se redimensionner
     setTimeout(() => {
         if (map) map.invalidateSize();
@@ -282,9 +283,10 @@ function updateMapMarkers(data) {
                     ${e.venue}
                 </p>
                 <div style="font-weight:800; color:${cat.color}; font-size:1.1rem; margin-bottom:12px">${e.price}</div>
-                <button onclick="parent.startNavigation(${e.lat}, ${e.lng}, '${e.title.replace(/'/g, "\\'")}')" 
-                        style="background:${cat.color}; color:white; border:none; padding:10px; border-radius:10px; width:100%; cursor:pointer; font-weight:700; box-shadow: 0 4px 12px ${cat.color}66">
-                    S'y rendre (Navigation)
+                <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lng}', '_blank')" 
+                        style="background:#4285F4; color:white; border:none; padding:10px; border-radius:10px; width:100%; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    Itinéraire Google Maps
                 </button>
             </div>
         `);
@@ -305,8 +307,10 @@ function handleLocation() {
             map.setView([userLocation.lat, userLocation.lng], 14);
             L.marker([userLocation.lat, userLocation.lng], {
                 icon: L.divIcon({
-                    className: 'user-pos',
-                    html: '<div style="background:#2ECC71; width:12px; height:12px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px #2ECC71"></div>'
+                    className: 'user-pos-marker',
+                    html: '<div class="user-pos-pulse"></div>',
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
                 })
             }).addTo(map);
         }
