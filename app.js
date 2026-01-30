@@ -42,7 +42,7 @@ let activeFilters = {
     search: '',
     mapCategories: new Set(categories.map(c => c.id))
 };
-let currentView = 'grid';
+let currentView = 'map';
 
 // ===================================
 // INITIALISATION
@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupMapLegend();
     renderEvents();
     setupEventListeners();
+    switchView('map'); // Initialiser la carte par défaut
 });
 
 function generateSampleData() {
