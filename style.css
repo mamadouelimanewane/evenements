@@ -196,13 +196,12 @@ body {
 }
 
 .view-switch {
-    background: #000000;
-    padding: 6px;
-    border-radius: 14px;
+    background: transparent;
+    padding: 0;
     display: flex;
-    gap: 6px;
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    gap: 10px;
+    border: none;
+    box-shadow: none;
 }
 
 .view-btn {

@@ -158,8 +158,14 @@ function setupEventListeners() {
     // View Switching
     document.querySelectorAll('.view-btn').forEach(btn => {
         btn.onclick = () => {
-            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.view-btn').forEach(b => {
+                b.classList.remove('active');
+                b.style.opacity = "0.6";
+                b.style.boxShadow = "none";
+            });
             btn.classList.add('active');
+            btn.style.opacity = "1";
+            btn.style.boxShadow = btn.dataset.mode === 'map' ? "0 4px 12px rgba(255, 140, 0, 0.4)" : "0 4px 12px rgba(52, 152, 219, 0.4)";
             switchView(btn.dataset.mode);
         };
     });
