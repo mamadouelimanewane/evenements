@@ -1,5 +1,5 @@
 // ===================================
-// CONFIGURATION DES CATÉGORIES (VOTRE LISTE STRATÉGIQUE)
+// CONFIGURATION DES CATÉGORIES
 // ===================================
 const categories = [
     { id: 'culture', label: 'Arts & Culture', color: '#FF8C00', icon: '🎭' },
@@ -27,93 +27,115 @@ const quartiers = [
 ];
 
 // ===================================
-// GÉNÉRATEUR D'ÉVÉNEMENTS RÉALISTES
+// ÉTAT GLOBAL
 // ===================================
 let eventsData = [];
+let map = null;
+let markers = [];
+let userLocation = null;
+let activeFilters = {
+    sidebarCategory: null,
+    quartier: null,
+    search: '',
+    mapCategories: new Set(categories.map(c => c.id)) // Toutes cochées par défaut
+};
+let currentView = 'grid';
 
+// ===================================
+// GÉNÉRATION DE DONNÉES
+// ===================================
 function generateSampleData() {
     const titles = {
-        culture: ["Exposition Art Contemporain", "Pièce de Théâtre Sorano", "Slam & Poésie", "Festival Cinéma Nomade"],
-        sports: ["Yoga sur la Plage", "Marathon de Dakar", "Tournoi Lutte Traditionnelle", "Session Surf Ngor"],
-        gastronomie: ["Le Grand Thiéboudienne", "Marché Street Food", "Atelier Cuisine Locale", "Dégustation Mafé Fusion"],
-        education: ["Conférence Tech Dakar", "Coding Bootcamp", "Salon de l'Emploi", "Atelier Entrepreneuriat"],
-        religieux: ["Cérémonie du Sabar", "Veillée Traditionnelle", "Festivité du Gamou", "Rencontre Inter-Religieuse"],
-        famille: ["Atelier Créatif Enfants", "Spectacle Guignol Sénégalais", "Journée au Parc Hann", "Musée Interactif"],
-        environnement: ["Reboisement Set Setal", "Nettoyage Plage Yoff", "Conférence Écologie", "Marché Bio"],
-        business: ["Startup Weekend Dakar", "Networking B2B", "Pitch Competition", "Innovation Summit"],
-        mode: ["Dakar Fashion Week", "Pop-up Store Créateurs", "Atelier Couture Wax", "Défilé Design Émergent"],
-        patrimoine: ["Visite Guidée Gorée", "Circuit Architecture Plateau", "Excursion Lac Rose", "Portes Ouvertes Musée Théodore Monod"]
+        culture: ["Exposition Art", "Théâtre Sorano", "Slam Dakar", "Ciné Nomade"],
+        sports: ["Yoga Plage", "Marathon Dakar", "Lutte Traditionnelle", "Surf Ngor"],
+        gastronomie: ["Grand Thiéboudienne", "Street Food", "Atelier Cuisine", "Mafé Fusion"],
+        education: ["Tech Dakar", "Coding Bootcamp", "Salon Emploi", "Entrepreneuriat"],
+        religieux: ["Sabar", "Veillée Traditionnelle", "Gamou", "Inter-Religieuse"],
+        famille: ["Atelier Enfants", "Guignol Sénégalais", "Parc Hann", "Musée Kids"],
+        environnement: ["Set Setal", "Nettoyage Yoff", "Conf Écologie", "Marché Bio"],
+        business: ["Startup Weekend", "Networking", "Pitch Dakar", "Innovation"],
+        mode: ["Fashion Week", "Pop-up Store", "Atelier Wax", "Défilé Design"],
+        patrimoine: ["Gorée Visit", "Plateau Arch", "Lac Rose", "Théodore Monod"]
     };
 
     const today = new Date();
-
     for (let i = 1; i <= 150; i++) {
         const cat = categories[Math.floor(Math.random() * categories.length)];
         const quartier = quartiers[Math.floor(Math.random() * quartiers.length)];
-        const titleList = titles[cat.id];
-        const title = titleList[Math.floor(Math.random() * titleList.length)] + " #" + i;
-
-        // Spread events over 30 days
+        const title = titles[cat.id][Math.floor(Math.random() * titles[cat.id].length)] + " #" + i;
         const eventDate = new Date();
         eventDate.setDate(today.getDate() + Math.floor(Math.random() * 30));
 
         eventsData.push({
-            id: i,
-            title: title,
-            category: cat.id,
+            id: i, title, category: cat.id,
             date: eventDate.toISOString().split('T')[0],
             time: `${16 + Math.floor(Math.random() * 6)}:00`,
             venue: `Lieu ${i} à ${quartier.label}`,
             quartier: quartier.id,
             lat: quartier.lat + (Math.random() - 0.5) * 0.03,
             lng: quartier.lng + (Math.random() - 0.5) * 0.03,
-            price: i % 3 === 0 ? "Gratuit" : `${(Math.floor(Math.random() * 10) + 2) * 1000} FCFA`,
-            description: `Rejoignez-nous pour cet événement exceptionnel de la catégorie ${cat.label}.`
+            price: i % 3 === 0 ? "Gratuit" : `${(Math.floor(Math.random() * 10) + 2) * 1000} FCFA`
         });
     }
 }
 
 // ===================================
-// STATE & APP LOGIC
+// INITIALISATION
 // ===================================
-let map = null;
-let markers = [];
-let userLocation = null;
-let activeFilters = { category: null, quartier: null, search: '' };
-let currentView = 'grid';
-let routingControl = null;
-
 document.addEventListener('DOMContentLoaded', () => {
     generateSampleData();
     initUI();
+    setupMapLegend(); // Initialiser la légende tout de suite
     renderEvents();
     setupEventListeners();
 });
 
 function initUI() {
-    // Populate Category Filters
     const catContainer = document.getElementById('genreFilters');
     categories.forEach(c => {
         const btn = document.createElement('button');
         btn.className = 'pill';
         btn.innerHTML = `${c.icon} ${c.label}`;
-        btn.onclick = () => toggleFilter('category', c.id, btn);
+        btn.onclick = () => toggleSidebarFilter('category', c.id, btn);
         catContainer.appendChild(btn);
     });
 
-    // Populate Quartier Filters
     const quartContainer = document.getElementById('quartierFilters');
     quartiers.forEach(q => {
         const btn = document.createElement('button');
         btn.className = 'pill';
         btn.textContent = q.label;
-        btn.onclick = () => toggleFilter('quartier', q.id, btn);
+        btn.onclick = () => toggleSidebarFilter('quartier', q.id, btn);
         quartContainer.appendChild(btn);
     });
 }
 
+function setupMapLegend() {
+    const legendContainer = document.getElementById('legendFilterItems');
+    if (!legendContainer) return;
+    legendContainer.innerHTML = '';
+
+    categories.forEach(cat => {
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = `
+            <input type="checkbox" id="map-cat-${cat.id}" checked>
+            <label for="map-cat-${cat.id}">
+                <span class="dot-indicator" style="background: ${cat.color}"></span>
+                ${cat.icon} ${cat.label}
+            </label>
+        `;
+        const checkbox = item.querySelector('input');
+        checkbox.addEventListener('change', () => {
+            if (checkbox.checked) activeFilters.mapCategories.add(cat.id);
+            else activeFilters.mapCategories.delete(cat.id);
+            renderEvents();
+        });
+        legendContainer.appendChild(item);
+    });
+}
+
 function setupEventListeners() {
-    // View Switching
     document.querySelectorAll('.view-btn').forEach(btn => {
         btn.onclick = () => {
             document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
@@ -122,52 +144,45 @@ function setupEventListeners() {
         };
     });
 
-    // Global Search
     document.getElementById('globalSearch').oninput = (e) => {
         activeFilters.search = e.target.value.toLowerCase();
         renderEvents();
     };
 
-    // Location
     document.getElementById('nearMeGlobal').onclick = handleLocation;
 }
 
-function toggleFilter(type, value, btn) {
-    if (activeFilters[type] === value) {
-        activeFilters[type] = null;
+// ===================================
+// LOGIQUE DE FILTRE ET AFFICHAGE
+// ===================================
+function toggleSidebarFilter(type, value, btn) {
+    const filterKey = type === 'category' ? 'sidebarCategory' : 'quartier';
+    if (activeFilters[filterKey] === value) {
+        activeFilters[filterKey] = null;
         btn.classList.remove('active');
     } else {
-        activeFilters[type] = value;
+        activeFilters[filterKey] = value;
         document.querySelectorAll(`#${type === 'category' ? 'genreFilters' : 'quartierFilters'} .pill`).forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
     }
     renderEvents();
 }
 
-function switchView(mode) {
-    currentView = mode;
-    document.getElementById('gridView').style.display = mode === 'grid' ? 'grid' : 'none';
-    document.getElementById('mapView').style.display = mode === 'map' ? 'block' : 'none';
-
-    if (mode === 'map') {
-        initMap();
-        setTimeout(() => map.invalidateSize(), 150);
-    }
-}
-
 function renderEvents() {
     const filtered = eventsData.filter(e => {
-        const matchCat = !activeFilters.category || e.category === activeFilters.category;
+        const matchSidebarCat = !activeFilters.sidebarCategory || e.category === activeFilters.sidebarCategory;
+        const matchMapCat = activeFilters.mapCategories.has(e.category);
         const matchQuartier = !activeFilters.quartier || e.quartier === activeFilters.quartier;
         const matchSearch = !activeFilters.search || e.title.toLowerCase().includes(activeFilters.search);
-        return matchCat && matchQuartier && matchSearch;
+        return matchSidebarCat && matchMapCat && matchQuartier && matchSearch;
     });
 
-    if (currentView === 'grid') {
-        const grid = document.getElementById('gridView');
+    // Rendu Grille
+    const grid = document.getElementById('gridView');
+    if (grid) {
         grid.innerHTML = '';
         filtered.forEach(e => {
-            const catInfo = categories.find(c => c.id === e.category);
+            const catInfo = categories.find(c => c.id === e.category) || categories[0];
             const card = document.createElement('div');
             card.className = 'event-card';
             card.style.borderTop = `4px solid ${catInfo.color}`;
@@ -196,96 +211,46 @@ function renderEvents() {
 // ===================================
 // MAP & NAVIGATION
 // ===================================
+function switchView(mode) {
+    currentView = mode;
+    document.getElementById('gridView').style.display = mode === 'grid' ? 'grid' : 'none';
+    document.getElementById('mapView').style.display = mode === 'map' ? 'block' : 'none';
+    if (mode === 'map') {
+        initMap();
+        setTimeout(() => map.invalidateSize(), 150);
+    }
+}
+
 function initMap() {
     if (map) return;
     map = L.map('mainMap', { zoomControl: false }).setView([14.71, -17.48], 12);
-
-    // Style de carte plus vibrant et clair (OpenStreetMap France ou Humanitarian)
     L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
         attribution: 'OpenStreetMap France',
         maxZoom: 20
     }).addTo(map);
-
     L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-    // Initialiser la légende interactive
-    setupMapLegend();
-
-    // Event listeners pour les contrôles de la carte
     document.getElementById('maximizeMapControl').onclick = toggleMapFullscreen;
     document.getElementById('mapLocateBtn').onclick = handleLocation;
-}
-
-const mapFilters = new Set(categories.map(c => c.id));
-
-function setupMapLegend() {
-    const legendContainer = document.getElementById('legendFilterItems');
-    legendContainer.innerHTML = '';
-
-    categories.forEach(cat => {
-        const item = document.createElement('div');
-        item.className = 'legend-item';
-        item.innerHTML = `
-            <input type="checkbox" id="map-cat-${cat.id}" checked>
-            <label for="map-cat-${cat.id}">
-                <span class="dot-indicator" style="background: ${cat.color}"></span>
-                ${cat.icon} ${cat.label}
-            </label>
-        `;
-
-        const checkbox = item.querySelector('input');
-        checkbox.addEventListener('change', () => {
-            if (checkbox.checked) mapFilters.add(cat.id);
-            else mapFilters.delete(cat.id);
-            renderEvents(); // Rafraîchir les marqueurs
-        });
-
-        legendContainer.appendChild(item);
-    });
-}
-
-function toggleMapFullscreen() {
-    const container = document.getElementById('mapView');
-    container.classList.toggle('map-fullscreen');
-
-    // Forcer la carte à se redimensionner
-    setTimeout(() => {
-        if (map) map.invalidateSize();
-    }, 300);
-
-    // Changer l'icône du bouton si nécessaire (optionnel)
+    renderEvents(); // Charger les marqueurs initiaux
 }
 
 function updateMapMarkers(data) {
     markers.forEach(m => map.removeLayer(m));
     markers = [];
-
-    // Filtrer les données en fonction des cases cochées de la légende
-    const filteredData = data.filter(e => mapFilters.has(e.category));
-
-    filteredData.forEach(e => {
-        const cat = categories.find(c => c.id === e.category);
+    data.forEach(e => {
+        const cat = categories.find(c => c.id === e.category) || categories[0];
         const marker = L.circleMarker([e.lat, e.lng], {
-            radius: 12, // Légèrement plus grand
-            fillColor: cat.color,
-            color: '#fff',
-            weight: 3, // Bordure blanche plus prononcée
-            fillOpacity: 1, // Opacité totale pour plus de vivacité
-            className: 'animate-marker'
+            radius: 12, fillColor: cat.color, color: '#fff', weight: 3, fillOpacity: 1
         }).addTo(map);
 
         marker.bindPopup(`
             <div class="map-popup-custom" style="padding: 10px; min-width: 200px">
                 <span style="background:${cat.color}; color:white; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; text-transform:uppercase">${cat.icon} ${cat.label}</span>
                 <strong style="display:block; margin:12px 0 6px; font-size:16px; color:#1a1e26">${e.title}</strong>
-                <p style="font-size:13px; color:#444; margin-bottom:12px; display:flex; align-items:center; gap:5px">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                    ${e.venue}
-                </p>
+                <p style="font-size:13px; color:#444; margin-bottom:12px">📍 ${e.venue}</p>
                 <div style="font-weight:800; color:${cat.color}; font-size:1.1rem; margin-bottom:12px">${e.price}</div>
                 <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lng}', '_blank')" 
                         style="background:#4285F4; color:white; border:none; padding:10px; border-radius:10px; width:100%; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
                     Itinéraire Google Maps
                 </button>
             </div>
@@ -296,13 +261,8 @@ function updateMapMarkers(data) {
 
 function handleLocation() {
     if (!navigator.geolocation) return alert("Géolocalisation non supportée");
-
-    document.getElementById('nearMeGlobal').textContent = "Localisation...";
-
     navigator.geolocation.getCurrentPosition(pos => {
         userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        document.getElementById('nearMeGlobal').innerHTML = '✅ Position Trouvée';
-
         if (map) {
             map.setView([userLocation.lat, userLocation.lng], 14);
             L.marker([userLocation.lat, userLocation.lng], {
@@ -314,32 +274,10 @@ function handleLocation() {
                 })
             }).addTo(map);
         }
-    }, () => {
-        alert("Impossible de vous localiser.");
     });
 }
 
-// Global function for Leaflet Popup
-window.startNavigation = function (lat, lng, name) {
-    if (!userLocation) {
-        alert("Veuillez d'abord cliquer sur 'Autour de moi' dans la barre latérale.");
-        return;
-    }
-
-    if (routingControl) map.removeControl(routingControl);
-
-    routingControl = L.Routing.control({
-        waypoints: [
-            L.latLng(userLocation.lat, userLocation.lng),
-            L.latLng(lat, lng)
-        ],
-        lineOptions: { styles: [{ color: '#2ECC71', opacity: 0.7, weight: 6 }] },
-        createMarker: () => null,
-        show: false
-    }).addTo(map);
-
-    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-    if (confirm(`Calcul de l'itinéraire vers "${name}"... Voulez-vous ouvrir Google Maps pour le guidage vocal ?`)) {
-        window.open(googleMapsUrl, '_blank');
-    }
-};
+function toggleMapFullscreen() {
+    document.getElementById('mapView').classList.toggle('map-fullscreen');
+    setTimeout(() => { if (map) map.invalidateSize(); }, 300);
+}
