@@ -199,33 +199,91 @@ function renderEvents() {
 function initMap() {
     if (map) return;
     map = L.map('mainMap', { zoomControl: false }).setView([14.71, -17.48], 12);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; CartoDB'
+    
+    // Style de carte plus vibrant et clair (OpenStreetMap France ou Humanitarian)
+    L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+        attribution: 'OpenStreetMap France',
+        maxZoom: 20
     }).addTo(map);
+
     L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    // Initialiser la légende interactive
+    setupMapLegend();
+
+    // Event listener pour le bouton plein écran
+    document.getElementById('maximizeMapControl').onclick = toggleMapFullscreen;
+}
+
+const mapFilters = new Set(categories.map(c => c.id));
+
+function setupMapLegend() {
+    const legendContainer = document.getElementById('legendFilterItems');
+    legendContainer.innerHTML = '';
+
+    categories.forEach(cat => {
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = `
+            <input type="checkbox" id="map-cat-${cat.id}" checked>
+            <label for="map-cat-${cat.id}">
+                <span class="dot-indicator" style="background: ${cat.color}"></span>
+                ${cat.icon} ${cat.label}
+            </label>
+        `;
+
+        const checkbox = item.querySelector('input');
+        checkbox.addEventListener('change', () => {
+            if (checkbox.checked) mapFilters.add(cat.id);
+            else mapFilters.delete(cat.id);
+            renderEvents(); // Rafraîchir les marqueurs
+        });
+
+        legendContainer.appendChild(item);
+    });
+}
+
+function toggleMapFullscreen() {
+    const container = document.getElementById('mapView');
+    container.classList.toggle('map-fullscreen');
+    
+    // Forcer la carte à se redimensionner
+    setTimeout(() => {
+        if (map) map.invalidateSize();
+    }, 300);
+
+    // Changer l'icône du bouton si nécessaire (optionnel)
 }
 
 function updateMapMarkers(data) {
     markers.forEach(m => map.removeLayer(m));
     markers = [];
 
-    data.forEach(e => {
+    // Filtrer les données en fonction des cases cochées de la légende
+    const filteredData = data.filter(e => mapFilters.has(e.category));
+
+    filteredData.forEach(e => {
         const cat = categories.find(c => c.id === e.category);
         const marker = L.circleMarker([e.lat, e.lng], {
-            radius: 10,
+            radius: 12, // Légèrement plus grand
             fillColor: cat.color,
             color: '#fff',
-            weight: 2,
-            fillOpacity: 0.9
+            weight: 3, // Bordure blanche plus prononcée
+            fillOpacity: 1, // Opacité totale pour plus de vivacité
+            className: 'animate-marker'
         }).addTo(map);
 
         marker.bindPopup(`
             <div class="map-popup-custom" style="padding: 10px; min-width: 200px">
-                <span style="background:${cat.color}; color:white; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; text-transform:uppercase">${cat.label}</span>
-                <strong style="display:block; margin:8px 0 4px; font-size:14px">${e.title}</strong>
-                <p style="font-size:12px; color:#666; margin-bottom:12px">📍 ${e.venue}</p>
+                <span style="background:${cat.color}; color:white; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; text-transform:uppercase">${cat.icon} ${cat.label}</span>
+                <strong style="display:block; margin:12px 0 6px; font-size:16px; color:#1a1e26">${e.title}</strong>
+                <p style="font-size:13px; color:#444; margin-bottom:12px; display:flex; align-items:center; gap:5px">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    ${e.venue}
+                </p>
+                <div style="font-weight:800; color:${cat.color}; font-size:1.1rem; margin-bottom:12px">${e.price}</div>
                 <button onclick="parent.startNavigation(${e.lat}, ${e.lng}, '${e.title.replace(/'/g, "\\'")}')" 
-                        style="background:${cat.color}; color:white; border:none; padding:8px; border-radius:8px; width:100%; cursor:pointer; font-weight:700">
+                        style="background:${cat.color}; color:white; border:none; padding:10px; border-radius:10px; width:100%; cursor:pointer; font-weight:700; box-shadow: 0 4px 12px ${cat.color}66">
                     S'y rendre (Navigation)
                 </button>
             </div>

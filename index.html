@@ -89,8 +89,17 @@
                 <!-- Map View -->
                 <section id="mapView" class="map-view-container" style="display: none;">
                     <div id="mainMap"></div>
+                    
+                    <!-- Map Legend & Filters Overlays -->
+                    <div class="map-overlay-legend" id="mapLegend">
+                        <h4>Types d'Événements</h4>
+                        <div class="legend-items" id="legendFilterItems">
+                            <!-- Dynamic checkboxes added via JS -->
+                        </div>
+                    </div>
+
                     <div class="map-overlay-controls">
-                        <button id="maximizeMapControl" title="Agrandir">
+                        <button id="maximizeMapControl" title="Agrandir / Plein Écran">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
