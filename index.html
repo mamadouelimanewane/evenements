@@ -71,21 +71,33 @@
         <!-- Main Content Area -->
         <main class="main-content">
             <header class="top-bar">
-                <div class="search-box">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <input type="text" id="globalSearch" placeholder="Chercher un événement, un lieu...">
+                <div style="display: flex; align-items: center; gap: 15px; width: 100%;">
+                    <button id="sidebarToggle" class="menu-toggle">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="search-box" style="flex: 1;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="globalSearch" placeholder="Chercher un événement...">
+                    </div>
                 </div>
-                <div class="view-switch">
-                    <button class="view-btn active" data-mode="grid">Grille</button>
-                    <button class="view-btn" data-mode="map">Carte</button>
+                <div class="header-actions">
+                    <div class="view-switch">
+                        <button class="view-btn active" data-mode="grid">Grille</button>
+                        <button class="view-btn" data-mode="map">Carte</button>
+                    </div>
+                    <button id="proposeEventBtnTop" class="btn-primary">
+                        ✨ Publier
+                    </button>
                 </div>
-                <button id="proposeEventBtnTop" class="btn-primary"
-                    style="margin-left: 15px; font-size: 0.9rem; padding: 10px 15px;">
-                    ✨ Publier
-                </button>
             </header>
 
             <div class="content-body">

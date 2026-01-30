@@ -489,7 +489,8 @@ body {
 }
 
 .btn-primary {
-    background: var(--primary);
+    background: var(--secondary);
+    /* Green as requested */
     color: white;
     padding: 12px 24px;
     border-radius: 12px;
@@ -505,7 +506,7 @@ body {
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px var(--primary-glow);
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
 }
 
 .action-btn {
@@ -534,8 +535,88 @@ body {
     background: var(--bg-card) !important;
 }
 
+/* RESPONSIVENESS */
 @media (max-width: 1024px) {
     .sidebar {
-        display: none;
+        position: fixed;
+        left: -280px;
+        top: 0;
+        height: 100vh;
+        transition: left 0.3s ease;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .main-content {
+        width: 100vw;
+    }
+}
+
+@media (max-width: 768px) {
+    .top-bar {
+        padding: 0 1rem;
+        height: auto;
+        min-height: 120px;
+        flex-direction: column;
+        justify-content: center;
+        gap: 15px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+
+    .search-box {
+        width: 100%;
+        max-width: none;
+    }
+
+    .header-actions {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .content-body {
+        padding: 1rem;
+    }
+
+    .events-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+    }
+
+    .map-overlay-legend {
+        width: calc(100% - 40px);
+        bottom: 100px;
+    }
+
+    #proposeEventBtnTop {
+        width: 100%;
+        margin-left: 0 !important;
+        margin-top: 10px;
+    }
+}
+
+/* Hamburger Menu Toggle */
+.menu-toggle {
+    display: none;
+    padding: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+    .menu-toggle {
+        display: block;
     }
 }

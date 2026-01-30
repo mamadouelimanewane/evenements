@@ -170,6 +170,23 @@ function setupEventListeners() {
     };
 
     document.getElementById('nearMeGlobal').onclick = handleLocation;
+
+    // Sidebar Toggle for Mobile
+    const sidebar = document.querySelector('.sidebar');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    if (toggleBtn) {
+        toggleBtn.onclick = (e) => {
+            e.stopPropagation();
+            sidebar.classList.toggle('active');
+        };
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', () => {
+        if (window.innerWidth <= 1024) {
+            sidebar.classList.remove('active');
+        }
+    });
 }
 
 // ===================================
