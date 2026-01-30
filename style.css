@@ -196,26 +196,49 @@ body {
 }
 
 .view-switch {
-    background: var(--bg-card);
-    padding: 4px;
-    border-radius: 10px;
+    background: #000000;
+    padding: 6px;
+    border-radius: 14px;
     display: flex;
-    gap: 4px;
+    gap: 6px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .view-btn {
-    padding: 8px 16px;
-    border-radius: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
     border: none;
     color: var(--text-dim);
     background: transparent;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.view-btn svg {
+    opacity: 0.7;
+    transition: transform 0.2s;
+}
+
+.view-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .view-btn.active {
-    background: #2D333F;
+    background: var(--primary);
     color: white;
+    box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.view-btn.active svg {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 /* Content Body */
