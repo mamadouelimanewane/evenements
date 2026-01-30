@@ -172,10 +172,10 @@ function setupEventListeners() {
             if (isMap) {
                 btn.style.background = "var(--primary)"; // Orange
                 btn.style.boxShadow = "0 8px 20px rgba(255, 140, 0, 0.5)";
-                document.getElementById('btnGrid').style.background = "#00D1FF"; // Keep grid blue but dimmed
+                document.getElementById('btnGrid').style.background = "#9D50BB"; // Keep grid purple but dimmed
             } else {
-                btn.style.background = "#00D1FF"; // Electric Blue
-                btn.style.boxShadow = "0 8px 20px rgba(0, 209, 255, 0.6)";
+                btn.style.background = "#9D50BB"; // Electric Purple
+                btn.style.boxShadow = "0 8px 20px rgba(157, 80, 187, 0.6)";
                 document.getElementById('btnMap').style.background = "var(--primary)"; // Keep map orange but dimmed
             }
 
