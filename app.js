@@ -53,7 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setupMapLegend();
     renderEvents();
     setupEventListeners();
-    switchView('map'); // Initialiser la carte par défaut
+    const mapBtn = document.getElementById('btnMap');
+    if (mapBtn) mapBtn.click(); // Force l'état initial coloré
 });
 
 function generateSampleData() {
@@ -158,14 +159,26 @@ function setupEventListeners() {
     // View Switching
     document.querySelectorAll('.view-btn').forEach(btn => {
         btn.onclick = () => {
+            const isMap = btn.dataset.mode === 'map';
             document.querySelectorAll('.view-btn').forEach(b => {
                 b.classList.remove('active');
                 b.style.opacity = "0.6";
                 b.style.boxShadow = "none";
             });
+
             btn.classList.add('active');
             btn.style.opacity = "1";
-            btn.style.boxShadow = btn.dataset.mode === 'map' ? "0 4px 12px rgba(255, 140, 0, 0.4)" : "0 4px 12px rgba(0, 209, 255, 0.4)";
+
+            if (isMap) {
+                btn.style.background = "var(--primary)"; // Orange
+                btn.style.boxShadow = "0 8px 20px rgba(255, 140, 0, 0.5)";
+                document.getElementById('btnGrid').style.background = "#00D1FF"; // Keep grid blue but dimmed
+            } else {
+                btn.style.background = "#00D1FF"; // Electric Blue
+                btn.style.boxShadow = "0 8px 20px rgba(0, 209, 255, 0.6)";
+                document.getElementById('btnMap').style.background = "var(--primary)"; // Keep map orange but dimmed
+            }
+
             switchView(btn.dataset.mode);
         };
     });

@@ -230,9 +230,8 @@ body {
 }
 
 .view-btn.active {
-    background: var(--primary);
     color: white;
-    box-shadow: 0 4px 12px var(--primary-glow);
+    opacity: 1 !important;
 }
 
 .view-btn.active svg {
