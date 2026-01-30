@@ -57,7 +57,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function generateSampleData() {
     if (eventsData.length > 0) return;
-    // ... génération initiale si vide (déjà fait précédemment)
+
+    const titles = {
+        culture: ["Exposition Art Contemporain", "Pièce de Théâtre Sorano", "Slam & Poésie", "Festival Cinéma Nomade"],
+        sports: ["Yoga sur la Plage", "Marathon de Dakar", "Tournoi Lutte Traditionnelle", "Session Surf Ngor"],
+        gastronomie: ["Le Grand Thiéboudienne", "Marché Street Food", "Atelier Cuisine Locale", "Dégustation Mafé Fusion"],
+        education: ["Conférence Tech Dakar", "Coding Bootcamp", "Salon de l'Emploi", "Atelier Entrepreneuriat"],
+        religieux: ["Cérémonie du Sabar", "Veillée Traditionnelle", "Festivité du Gamou", "Rencontre Inter-Religieuse"],
+        famille: ["Atelier Créatif Enfants", "Spectacle Guignol Sénégalais", "Journée au Parc Hann", "Musée Interactif"],
+        environnement: ["Reboisement Set Setal", "Nettoyage Plage Yoff", "Conférence Écologie", "Marché Bio"],
+        business: ["Startup Weekend Dakar", "Networking B2B", "Pitch Competition", "Innovation Summit"],
+        mode: ["Dakar Fashion Week", "Pop-up Store Créateurs", "Atelier Couture Wax", "Défilé Design Émergent"],
+        patrimoine: ["Visite Guidée Gorée", "Circuit Architecture Plateau", "Excursion Lac Rose", "Portes Ouvertes Musée Théodore Monod"]
+    };
+
+    const today = new Date();
+    for (let i = 1; i <= 150; i++) {
+        const cat = categories[Math.floor(Math.random() * categories.length)];
+        const quartier = quartiers[Math.floor(Math.random() * quartiers.length)];
+        const title = titles[cat.id][Math.floor(Math.random() * titles[cat.id].length)] + " #" + i;
+        const eventDate = new Date();
+        eventDate.setDate(today.getDate() + Math.floor(Math.random() * 30));
+
+        eventsData.push({
+            id: i,
+            title: title,
+            category: cat.id,
+            date: eventDate.toISOString().split('T')[0],
+            time: `${16 + Math.floor(Math.random() * 6)}:00`,
+            venue: `Lieu ${i} à ${quartier.label}`,
+            quartier: quartier.id,
+            lat: quartier.lat + (Math.random() - 0.5) * 0.03,
+            lng: quartier.lng + (Math.random() - 0.5) * 0.03,
+            price: i % 3 === 0 ? "Gratuit" : `${(Math.floor(Math.random() * 10) + 2) * 1000} FCFA`,
+            status: 'approved' // Pour qu'ils soient visibles immédiatement
+        });
+    }
 }
 
 function initUI() {
@@ -255,7 +290,21 @@ function updateMapMarkers(data) {
     data.forEach(e => {
         const cat = categories.find(c => c.id === e.category) || categories[0];
         const marker = L.circleMarker([e.lat, e.lng], { radius: 12, fillColor: cat.color, color: '#fff', weight: 3, fillOpacity: 1 }).addTo(map);
-        marker.bindPopup(`<div style="padding:10px"><strong>${e.title}</strong><p>${e.venue}</p></div>`);
+
+        marker.bindPopup(`
+            <div class="map-popup-custom" style="padding: 10px; min-width: 200px">
+                <span style="background:${cat.color}; color:white; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; text-transform:uppercase">${cat.icon} ${cat.label}</span>
+                <strong style="display:block; margin:12px 0 6px; font-size:16px; color:#1a1e26">${e.title}</strong>
+                <p style="font-size:13px; color:#444; margin-bottom:8px">📍 ${e.venue}</p>
+                <p style="font-size:12px; color:#666; margin-bottom:12px">📅 ${e.date}</p>
+                <div style="font-weight:800; color:${cat.color}; font-size:1.1rem; margin-bottom:12px">${e.price}</div>
+                <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lng}', '_blank')" 
+                        style="background:#4285F4; color:white; border:none; padding:10px; border-radius:10px; width:100%; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    Itinéraire Google Maps
+                </button>
+            </div>
+        `);
         markers.push(marker);
     });
 }
