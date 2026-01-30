@@ -124,13 +124,17 @@ function initUI() {
 
 function setupEventListeners() {
     // Proposer événement
-    document.getElementById('proposeEventBtn').onclick = () => {
+    const openSubmit = () => {
         if (!currentUser) {
             document.getElementById('authModal').style.display = 'flex';
         } else {
             document.getElementById('submitEventModal').style.display = 'flex';
         }
     };
+
+    document.getElementById('proposeEventBtn').onclick = openSubmit;
+    const topBtn = document.getElementById('proposeEventBtnTop');
+    if (topBtn) topBtn.onclick = openSubmit;
 
     // User Auth Form
     document.getElementById('userAuthForm').onsubmit = (e) => {
