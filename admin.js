@@ -1,175 +1,119 @@
 // ===================================
-// GESTION DES DONNÉES (LocalStorage)
+// CONFIGURATION & SÉCURITÉ
 // ===================================
+const ADMIN_CODE = "DAKAR2026";
 
-// Charger les catégories initiales ou depuis LocalStorage
-let appCategories = JSON.parse(localStorage.getItem('dakarevents_categories')) || [
-    { id: 'culture', label: 'Arts & Culture', color: '#FF8C00', icon: '🎭' },
-    { id: 'sports', label: 'Sports & Bien-être', color: '#2ECC71', icon: '🏃' },
-    { id: 'gastronomie', label: 'Gastronomie', color: '#E74C3C', icon: '🍽️' },
-    { id: 'education', label: 'Éducation & Conf.', color: '#3498DB', icon: '🎓' }
-];
-
-let appEvents = JSON.parse(localStorage.getItem('dakarevents_events')) || [];
-
-let currentImageBase64 = null;
+// Initialisation des données
+let categories = JSON.parse(localStorage.getItem('dakarevents_categories')) || [];
+let approvedEvents = JSON.parse(localStorage.getItem('dakarevents_events')) || [];
+let pendingEvents = JSON.parse(localStorage.getItem('dakarevents_pending')) || [];
 
 // ===================================
-// INITIALISATION
+// AUTHENTIFICATION
 // ===================================
-document.addEventListener('DOMContentLoaded', () => {
-    updateSelects();
-    renderAll();
-});
+function handleAdminLogin(e) {
+    e.preventDefault();
+    const pass = document.getElementById('adminPass').value;
+    if (pass === ADMIN_CODE) {
+        document.getElementById('loginWall').style.display = 'none';
+        document.getElementById('adminLayout').style.display = 'grid';
+        renderAll();
+    } else {
+        document.getElementById('loginError').style.display = 'block';
+    }
+}
 
+// ===================================
+// AFFICHAGE
+// ===================================
 function renderAll() {
-    renderEvents();
-    renderCategories();
+    renderPending();
+    renderApproved();
 }
 
-function updateSelects() {
-    const catSelect = document.getElementById('eventCategory');
-    const quartSelect = document.getElementById('eventQuartier');
+function renderPending() {
+    const list = document.getElementById('pendingList');
+    if (!list) return;
 
-    // De app.js (ou hardcoded ici pour admin)
-    const quartiers = [
-        { id: 'plateau', label: 'Plateau' }, { id: 'almadies', label: 'Almadies' },
-        { id: 'ngor', label: 'Ngor' }, { id: 'ouakam', label: 'Ouakam' },
-        { id: 'yoff', label: 'Yoff' }, { id: 'medina', label: 'Médina' },
-        { id: 'lac-rose', label: 'Lac Rose' }
-    ];
-
-    catSelect.innerHTML = appCategories.map(c => `<option value="${c.id}">${c.icon} ${c.label}</option>`).join('');
-    quartSelect.innerHTML = quartiers.map(q => `<option value="${q.id}">${q.label}</option>`).join('');
-}
-
-// ===================================
-// GESTION DES ÉVÉNEMENTS
-// ===================================
-function handleEventSubmit(e) {
-    e.preventDefault();
-
-    const newEvent = {
-        id: Date.now(),
-        title: document.getElementById('eventTitle').value,
-        category: document.getElementById('eventCategory').value,
-        date: document.getElementById('eventDate').value,
-        time: document.getElementById('eventTime').value,
-        price: document.getElementById('eventPrice').value,
-        venue: document.getElementById('eventVenue').value,
-        quartier: document.getElementById('eventQuartier').value,
-        description: document.getElementById('eventDescription').value,
-        image: currentImageBase64, // L'image en base64
-        lat: 14.7, lng: -17.4 // Coordonnées par défaut (Dakar)
-    };
-
-    appEvents.unshift(newEvent); // Ajouter au début
-    saveAndRefresh();
-    e.target.reset();
-    document.getElementById('imagePreview').style.display = 'none';
-    currentImageBase64 = null;
-    toggleForm('eventForm');
-}
-
-function deleteEvent(id) {
-    if (confirm('Supprimer cet événement ?')) {
-        appEvents = appEvents.filter(e => e.id !== id);
-        saveAndRefresh();
+    if (pendingEvents.length === 0) {
+        list.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 2rem;">Aucune soumission en attente.</td></tr>';
+        return;
     }
-}
 
-function renderEvents() {
-    const list = document.getElementById('eventsList');
-    list.innerHTML = appEvents.map(e => {
-        const cat = appCategories.find(c => c.id === e.category) || { label: 'Inconnu', icon: '❓' };
-        return `
-            <tr>
-                <td><div class="image-preview" style="background-image: url('${e.image || 'https://via.placeholder.com/100'}')"></div></td>
-                <td><strong>${e.title}</strong><br><small>${e.venue}</small></td>
-                <td>${cat.icon} ${cat.label}</td>
-                <td>${e.date}<br>${e.time}</td>
-                <td>${e.price}</td>
-                <td>
-                    <button class="action-btn btn-delete" onclick="deleteEvent(${e.id})">🗑️</button>
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-// ===================================
-// GESTION DES CATÉGORIES
-// ===================================
-function handleCategorySubmit(e) {
-    e.preventDefault();
-    const newCat = {
-        id: document.getElementById('catId').value,
-        label: document.getElementById('catLabel').value,
-        icon: document.getElementById('catIcon').value,
-        color: document.getElementById('catColor').value
-    };
-    appCategories.push(newCat);
-    saveAndRefresh();
-    e.target.reset();
-    toggleForm('categoryForm');
-    updateSelects();
-}
-
-function deleteCategory(id) {
-    if (confirm('Supprimer cette catégorie ?')) {
-        appCategories = appCategories.filter(c => c.id !== id);
-        saveAndRefresh();
-        updateSelects();
-    }
-}
-
-function renderCategories() {
-    const list = document.getElementById('categoriesList');
-    list.innerHTML = appCategories.map(c => `
+    list.innerHTML = pendingEvents.map(e => `
         <tr>
-            <td style="font-size: 1.5rem">${c.icon}</td>
-            <td><strong>${c.label}</strong></td>
-            <td><code>${c.id}</code></td>
-            <td><span class="dot-indicator" style="background: ${c.color}"></span> ${c.color}</td>
+            <td><div class="image-preview" style="background-image: url('${e.image || ''}')"></div></td>
+            <td><strong>${e.title}</strong><br><small>${e.venue} | ${e.date}</small></td>
+            <td>${e.submittedBy ? e.submittedBy.name : 'Anonyme'}<br><code style="color:var(--admin-accent)">${e.submittedBy ? e.submittedBy.phone : '-'}</code></td>
             <td>
-                <button class="action-btn btn-delete" onclick="deleteCategory('${c.id}')">🗑️</button>
+                <button class="action-btn btn-approve" onclick="approveEvent(${e.id})">Approuver ✅</button>
+                <button class="action-btn btn-delete" onclick="deletePending(${e.id})">Refuser ❌</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderApproved() {
+    const list = document.getElementById('approvedList');
+    if (!list) return;
+
+    list.innerHTML = approvedEvents.map(e => `
+        <tr>
+            <td><div class="image-preview" style="background-image: url('${e.image || ''}')"></div></td>
+            <td><strong>${e.title}</strong></td>
+            <td>${e.category}</td>
+            <td>
+                <button class="action-btn btn-delete" onclick="deleteApproved(${e.id})">Supprimer 🗑️</button>
             </td>
         </tr>
     `).join('');
 }
 
 // ===================================
-// UTILITAIRES
+// ACTIONS ADMIN
 // ===================================
-function saveAndRefresh() {
-    localStorage.setItem('dakarevents_categories', JSON.stringify(appCategories));
-    localStorage.setItem('dakarevents_events', JSON.stringify(appEvents));
+function approveEvent(id) {
+    const event = pendingEvents.find(e => e.id === id);
+    if (event) {
+        event.status = 'approved';
+        approvedEvents.unshift(event); // Ajouter aux événements en ligne
+        pendingEvents = pendingEvents.filter(e => e.id !== id); // Retirer des attentes
+        saveData();
+        alert("Événement approuvé et mis en ligne !");
+    }
+}
+
+function deletePending(id) {
+    if (confirm("Refuser et supprimer cette soumission ?")) {
+        pendingEvents = pendingEvents.filter(e => e.id !== id);
+        saveData();
+    }
+}
+
+function deleteApproved(id) {
+    if (confirm("Supprimer cet événement en ligne ?")) {
+        approvedEvents = approvedEvents.filter(e => e.id !== id);
+        saveData();
+    }
+}
+
+function saveData() {
+    localStorage.setItem('dakarevents_events', JSON.stringify(approvedEvents));
+    localStorage.setItem('dakarevents_pending', JSON.stringify(pendingEvents));
     renderAll();
+}
+
+// Tab navigation
+function showTab(tab) {
+    const tabs = ['pendingTab', 'eventsTab', 'categoriesTab'];
+    tabs.forEach(t => document.getElementById(t).style.display = t.startsWith(tab) ? 'block' : 'none');
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.innerText.toLowerCase().includes(tab)) btn.classList.add('active');
+    });
 }
 
 function toggleForm(id) {
     const f = document.getElementById(id);
     f.style.display = f.style.display === 'none' ? 'block' : 'none';
-}
-
-function showTab(tab) {
-    document.getElementById('eventsTab').style.display = tab === 'events' ? 'block' : 'none';
-    document.getElementById('categoriesTab').style.display = tab === 'categories' ? 'block' : 'none';
-    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-}
-
-function previewImage(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        currentImageBase64 = e.target.result;
-        const preview = document.getElementById('imagePreview');
-        preview.src = currentImageBase64;
-        preview.style.display = 'block';
-        document.getElementById('uploadText').style.display = 'none';
-    };
-    reader.readAsDataURL(file);
 }

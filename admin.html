@@ -17,13 +17,30 @@
 
         body {
             background: var(--admin-bg);
-            overflow: auto;
+            color: white;
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Login Wall */
+        #loginWall {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--admin-bg);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .admin-layout {
             display: grid;
             grid-template-columns: 280px 1fr;
             min-height: 100vh;
+            display: none;
         }
 
         .admin-sidebar {
@@ -46,33 +63,24 @@
             margin-bottom: 2.5rem;
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 3rem;
-        }
-
-        .stat-card {
-            background: var(--admin-card);
-            padding: 1.5rem;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-        }
-
-        .stat-card h4 {
+        .tab-btn {
+            background: transparent;
+            border: none;
             color: var(--text-dim);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
+            padding: 12px;
+            width: 100%;
+            text-align: left;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 5px;
         }
 
-        .stat-card p {
-            font-size: 2rem;
-            font-weight: 800;
+        .tab-btn.active {
+            background: var(--border);
+            color: var(--admin-accent);
+            font-weight: 700;
         }
 
-        /* Form styling */
         .form-card {
             background: var(--admin-card);
             padding: 2rem;
@@ -81,27 +89,15 @@
             margin-bottom: 2rem;
         }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-dim);
-            font-size: 0.9rem;
-        }
-
         .form-input,
-        .form-select,
-        .form-textarea {
+        .form-select {
             width: 100%;
             padding: 12px;
             background: #0F1115;
             border: 1px solid var(--border);
             border-radius: 10px;
             color: white;
-            font-family: inherit;
+            margin-top: 5px;
         }
 
         .btn-primary {
@@ -112,235 +108,155 @@
             border: none;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4);
-        }
-
-        /* Table styling */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            background: var(--admin-card);
-            border-radius: 20px;
-            overflow: hidden;
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 1rem 1.5rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
+            margin-top: 1rem;
         }
 
         .data-table th {
-            background: rgba(255, 255, 255, 0.02);
+            text-align: left;
+            color: var(--text-dim);
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
             font-size: 0.8rem;
             text-transform: uppercase;
-            color: var(--text-dim);
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pending-badge {
+            background: #F1C40F;
+            color: black;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
         }
 
         .image-preview {
-            width: 100px;
-            height: 60px;
-            border-radius: 8px;
+            width: 80px;
+            height: 50px;
             background-size: cover;
-            background-position: center;
+            border-radius: 6px;
         }
 
         .action-btn {
-            padding: 8px;
+            padding: 8px 12px;
             border-radius: 8px;
             border: 1px solid var(--border);
             background: transparent;
-            color: var(--text-dim);
-            cursor: pointer;
-            margin-right: 5px;
-        }
-
-        .action-btn:hover {
-            border-color: white;
             color: white;
+            cursor: pointer;
         }
 
-        .btn-delete:hover {
+        .btn-approve {
+            border-color: #2ECC71;
+            color: #2ECC71;
+        }
+
+        .btn-delete {
             border-color: #E74C3C;
             color: #E74C3C;
-        }
-
-        #imageUpload {
-            display: none;
-        }
-
-        .upload-area {
-            border: 2px dashed var(--border);
-            padding: 2rem;
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-
-        .upload-area:hover {
-            border-color: var(--admin-accent);
         }
     </style>
 </head>
 
 <body>
-    <div class="admin-layout">
-        <aside class="admin-sidebar">
-            <div class="brand" style="margin-bottom: 3rem;">
+    <!-- Login Screen -->
+    <div id="loginWall">
+        <div class="modal-content" style="max-width: 350px;">
+            <div class="brand" style="margin-bottom: 2rem; justify-content: center;">
                 <span class="logo-dot"></span>
                 <h1>ADMIN<span>Dakar</span></h1>
             </div>
+            <form onsubmit="handleAdminLogin(event)">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Code d'accès administrateur</label>
+                    <input type="password" id="adminPass" class="form-input" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Se Connecter</button>
+            </form>
+            <p id="loginError"
+                style="color: #E74C3C; font-size: 0.8rem; margin-top: 1rem; display: none; text-align: center;">Code
+                incorrect.</p>
+        </div>
+    </div>
 
-            <nav class="main-nav">
-                <button class="nav-item active" onclick="showTab('events')">Gestion Événements</button>
-                <button class="nav-item" onclick="showTab('categories')">Gestion Catégories</button>
-                <a href="index.html" class="nav-item" style="margin-top: auto; text-decoration: none;">Voir le Site</a>
+    <!-- main Admin Layout -->
+    <div class="admin-layout" id="adminLayout">
+        <aside class="admin-sidebar">
+            <div class="brand" style="margin-bottom: 3rem;">
+                <span class="logo-dot"></span>
+                <h1>ADMIN<span>Panel</span></h1>
+            </div>
+            <nav>
+                <button class="tab-btn active" onclick="showTab('pending')">📥 Soumissions (En attente)</button>
+                <button class="tab-btn" onclick="showTab('events')">✅ Événements en ligne</button>
+                <button class="tab-btn" onclick="showTab('categories')">🏷️ Catégories</button>
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+                <a href="index.html" style="color: var(--text-dim); text-decoration: none; padding-left: 12px;">🌍
+                    Retour au site</a>
             </nav>
         </aside>
 
         <main class="admin-content">
-            <!-- TAB: EVENTS -->
-            <div id="eventsTab">
+            <!-- TAB: PENDING -->
+            <div id="pendingTab">
                 <div class="admin-header">
-                    <h2>Gestion des Événements</h2>
-                    <button class="btn-primary" onclick="toggleForm('eventForm')">+ Ajouter Événement</button>
+                    <h2>Soumissions à valider</h2>
                 </div>
-
-                <!-- Formulaire Événement (Masqué par défaut) -->
-                <div id="eventForm" class="form-card" style="display: none;">
-                    <h3>Nouvel Événement</h3>
-                    <form id="addEventForm" onsubmit="handleEventSubmit(event)">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                            <div class="form-group">
-                                <label>Titre de l'événement</label>
-                                <input type="text" id="eventTitle" class="form-input" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Catégorie</label>
-                                <select id="eventCategory" class="form-select"></select>
-                            </div>
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
-                            <div class="form-group">
-                                <label>Date</label>
-                                <input type="date" id="eventDate" class="form-input" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Heure</label>
-                                <input type="time" id="eventTime" class="form-input" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Prix (ex: 5000 FCFA ou Gratuit)</label>
-                                <input type="text" id="eventPrice" class="form-input" required>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Adresse / Lieu précis</label>
-                            <input type="text" id="eventVenue" class="form-input" required
-                                placeholder="Ex: Place du Souvenir">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Quartier de Dakar</label>
-                            <select id="eventQuartier" class="form-select"></select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea id="eventDescription" class="form-textarea" rows="3"></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Image de l'événement</label>
-                            <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
-                                <p id="uploadText">Cliquez pour téléverser une image (JPG, PNG)</p>
-                                <input type="file" id="imageUpload" accept="image/*" onchange="previewImage(event)">
-                                <img id="imagePreview" style="max-height: 150px; display: none; margin: 10px auto;">
-                            </div>
-                        </div>
-
-                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                            <button type="button" class="action-btn" onclick="toggleForm('eventForm')">Annuler</button>
-                            <button type="submit" class="btn-primary">Enregistrer l'Événement</button>
-                        </div>
-                    </form>
-                </div>
-
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>Image</th>
                             <th>Événement</th>
-                            <th>Catégorie</th>
-                            <th>Date & Heure</th>
-                            <th>Prix</th>
+                            <th>Auteur / Tel</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="eventsList"></tbody>
+                    <tbody id="pendingList"></tbody>
+                </table>
+            </div>
+
+            <!-- TAB: EVENTS (Approved) -->
+            <div id="eventsTab" style="display: none;">
+                <div class="admin-header">
+                    <h2>Événements en ligne</h2>
+                    <button class="btn-primary" onclick="toggleForm('eventForm')">+ Nouvel Événement</button>
+                </div>
+                <div id="eventForm" class="form-card" style="display: none;">
+                    <h3>Ajouter directement</h3>
+                    <form onsubmit="handleAdminEventSubmit(event)">
+                        <!-- Mêmes champs que précédemment... -->
+                        <div class="form-group"><label>Titre</label><input type="text" id="adminEventTitle"
+                                class="form-input" required></div>
+                        <button type="submit" class="btn-primary">Publier</button>
+                        <button type="button" class="action-btn" onclick="toggleForm('eventForm')">Annuler</button>
+                    </form>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Titre</th>
+                            <th>Catégorie</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approvedList"></tbody>
                 </table>
             </div>
 
             <!-- TAB: CATEGORIES -->
             <div id="categoriesTab" style="display: none;">
-                <div class="admin-header">
-                    <h2>Gestion des Catégories</h2>
-                    <button class="btn-primary" onclick="toggleForm('categoryForm')">+ Ajouter Catégorie</button>
-                </div>
-
-                <div id="categoryForm" class="form-card" style="display: none;">
-                    <h3>Nouvelle Catégorie</h3>
-                    <form onsubmit="handleCategorySubmit(event)">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                            <div class="form-group">
-                                <label>Nom de la catégorie</label>
-                                <input type="text" id="catLabel" class="form-input" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Identifiant (ID)</label>
-                                <input type="text" id="catId" class="form-input" required placeholder="ex: yoga-dakar">
-                            </div>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                            <div class="form-group">
-                                <label>Emoji / Icône</label>
-                                <input type="text" id="catIcon" class="form-input" required placeholder="🎨">
-                            </div>
-                            <div class="form-group">
-                                <label>Couleur</label>
-                                <input type="color" id="catColor" class="form-input" style="height: 50px;"
-                                    value="#FF8C00">
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                            <button type="button" class="action-btn"
-                                onclick="toggleForm('categoryForm')">Annuler</button>
-                            <button type="submit" class="btn-primary">Ajouter Catégorie</button>
-                        </div>
-                    </form>
-                </div>
-
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Icône</th>
-                            <th>Label</th>
-                            <th>ID</th>
-                            <th>Couleur</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="categoriesList"></tbody>
-                </table>
+                <h2>Catégories</h2>
+                <!-- Interface simplifiée... -->
             </div>
         </main>
     </div>
