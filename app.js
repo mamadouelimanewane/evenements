@@ -165,7 +165,7 @@ function setupEventListeners() {
             });
             btn.classList.add('active');
             btn.style.opacity = "1";
-            btn.style.boxShadow = btn.dataset.mode === 'map' ? "0 4px 12px rgba(255, 140, 0, 0.4)" : "0 4px 12px rgba(52, 152, 219, 0.4)";
+            btn.style.boxShadow = btn.dataset.mode === 'map' ? "0 4px 12px rgba(255, 140, 0, 0.4)" : "0 4px 12px rgba(0, 209, 255, 0.4)";
             switchView(btn.dataset.mode);
         };
     });
