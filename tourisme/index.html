@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dakar Events Pro - Guide Culturel Premium</title>
+    <title>Sénégal Tourisme - Guide Hôtels & Sites Touristiques</title>
     <!-- CSS Dependencies -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
@@ -20,7 +20,7 @@
         <aside class="sidebar">
             <div class="brand">
                 <span class="logo-dot"></span>
-                <h1>DAKAR<span>EVENTS</span></h1>
+                <h1>SÉNÉGAL<span>TOURISME</span></h1>
             </div>
 
             <nav class="main-nav">
@@ -39,24 +39,17 @@
                     </svg>
                     Favoris
                 </button>
-                <button class="nav-item" onclick="location.href='tourisme/index.html'"
-                    style="margin-top: 10px; border: 1px solid rgba(255,255,255,0.1);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                    </svg>
-                    Sénégal Tourisme
-                </button>
             </nav>
 
             <div class="filters-section">
                 <h3>Catégories</h3>
                 <div class="filter-pills" id="genreFilters">
-                    <!-- Dynamic genres -->
+                    <!-- Dynamic categories -->
                 </div>
 
-                <h3>Quartiers</h3>
-                <div class="filter-pills" id="quartierFilters">
-                    <!-- Dynamic quartiers -->
+                <h3>Régions</h3>
+                <div class="filter-pills" id="regionFilters">
+                    <!-- Dynamic regions -->
                 </div>
             </div>
 
@@ -68,9 +61,9 @@
                     </svg>
                     Autour de moi
                 </button>
-                <button id="proposeEventBtn" class="nav-item"
+                <button id="proposeLocationBtn" class="nav-item"
                     style="justify-content: center; background: var(--primary-glow); color: var(--primary); font-weight: 700;">
-                    ✨ Proposer un événement
+                    ✨ Proposer un lieu
                 </button>
             </div>
         </aside>
@@ -93,7 +86,7 @@
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
-                        <input type="text" id="globalSearch" placeholder="Chercher un événement...">
+                        <input type="text" id="globalSearch" placeholder="Chercher un hôtel, un site...">
                     </div>
                 </div>
                 <div class="header-actions"
@@ -122,7 +115,7 @@
                             Carte
                         </button>
                     </div>
-                    <button id="proposeEventBtnTop" class="btn-primary" style="margin: 0;">
+                    <button id="proposeLocationBtnTop" class="btn-primary" style="margin: 0;">
                         ✨ Publier
                     </button>
                 </div>
@@ -131,7 +124,7 @@
             <div class="content-body">
                 <!-- Grid View -->
                 <section id="gridView" class="events-grid" style="display: none;">
-                    <!-- Event cards loaded here -->
+                    <!-- Location cards loaded here -->
                 </section>
 
                 <!-- Map View -->
@@ -140,7 +133,7 @@
 
                     <!-- Map Legend & Filters Overlays -->
                     <div class="map-overlay-legend" id="mapLegend">
-                        <h4>Types d'Événements</h4>
+                        <h4>Types de Lieux</h4>
                         <div class="legend-items" id="legendFilterItems">
                             <!-- Dynamic checkboxes added via JS -->
                         </div>
@@ -195,16 +188,16 @@
         </div>
     </div>
 
-    <!-- MODAL: Soumission Événement -->
-    <div id="submitEventModal" class="modal-overlay" style="display: none;">
+    <!-- MODAL: Soumission Lieu Touristique -->
+    <div id="submitLocationModal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-width: 600px;">
-            <h3>Proposer un événement</h3>
+            <h3>Proposer un lieu touristique</h3>
             <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1.5rem;">Votre proposition sera
                 vérifiée par un administrateur avant d'être mise en ligne.</p>
             <form id="publicSubmitForm">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label>Titre</label>
+                        <label>Nom du lieu</label>
                         <input type="text" id="pubTitle" class="form-input" required>
                     </div>
                     <div class="form-group">
@@ -214,12 +207,12 @@
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label>Date</label>
-                        <input type="date" id="pubDate" class="form-input" required>
+                        <label>Région</label>
+                        <select id="pubRegion" class="form-select"></select>
                     </div>
                     <div class="form-group">
-                        <label>Lieu</label>
-                        <input type="text" id="pubVenue" class="form-input" required>
+                        <label>Adresse</label>
+                        <input type="text" id="pubAddress" class="form-input" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -227,7 +220,7 @@
                     <input type="file" id="pubImage" accept="image/*" class="form-input">
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 2rem;">
-                    <button type="button" class="action-btn" onclick="closeModal('submitEventModal')"
+                    <button type="button" class="action-btn" onclick="closeModal('submitLocationModal')"
                         style="flex:1">Annuler</button>
                     <button type="submit" class="btn-primary" style="flex:2">Envoyer pour validation</button>
                 </div>
