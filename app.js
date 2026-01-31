@@ -40,7 +40,7 @@ let activeFilters = {
     sidebarCategory: null,
     quartier: null,
     search: '',
-    mapCategories: new Set() // Démarrer avec aucune catégorie cochée
+    mapCategories: new Set(categories.map(c => c.id)) // Toutes les catégories cochées par défaut
 };
 let currentView = 'map';
 
@@ -49,9 +49,9 @@ let currentView = 'map';
 // ===================================
 document.addEventListener('DOMContentLoaded', () => {
     // Force refresh sample data to include new images
-    if (!localStorage.getItem('dakarevents_v2')) {
+    if (!localStorage.getItem('dakarevents_v3')) {
         localStorage.removeItem('dakarevents_events');
-        localStorage.setItem('dakarevents_v2', 'true');
+        localStorage.setItem('dakarevents_v3', 'true');
         eventsData = [];
     }
     generateSampleData();
@@ -62,6 +62,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapBtn = document.getElementById('btnMap');
     if (mapBtn) mapBtn.click(); // Force l'état initial coloré
 });
+
+function setupMapLegend() {
+    const legendContainer = document.getElementById('legendFilterItems');
+    if (!legendContainer) return;
+    legendContainer.innerHTML = '';
+    categories.forEach(cat => {
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = `<input type="checkbox" id="map-cat-${cat.id}" ${activeFilters.mapCategories.has(cat.id) ? 'checked' : ''}><label for="map-cat-${cat.id}"><span class="dot-indicator" style="background: ${cat.color}"></span> ${cat.icon} ${cat.label}</label>`;
+        item.querySelector('input').onchange = (e) => {
+            if (e.target.checked) activeFilters.mapCategories.add(cat.id);
+            else activeFilters.mapCategories.delete(cat.id);
+            renderEvents();
+        };
+        legendContainer.appendChild(item);
+    });
+}
 
 function generateSampleData() {
     if (eventsData.length > 0) return;
@@ -330,19 +347,8 @@ function initMap() {
     renderEvents();
 }
 
-function setupMapLegend() {
-    const legendContainer = document.getElementById('legendFilterItems');
-    if (!legendContainer) return;
-    legendContainer.innerHTML = '';
-    categories.forEach(cat => {
-        const item = document.createElement('div');
-        item.className = 'legend-item';
-        // Décoché par défaut - l'utilisateur doit cocher pour voir les événements
-        item.innerHTML = `<input type="checkbox" id="map-cat-${cat.id}"><label for="map-cat-${cat.id}"><span class="dot-indicator" style="background: ${cat.color}"></span> ${cat.icon} ${cat.label}</label>`;
-        item.querySelector('input').onchange = (e) => { if (e.target.checked) activeFilters.mapCategories.add(cat.id); else activeFilters.mapCategories.delete(cat.id); renderEvents(); };
-        legendContainer.appendChild(item);
-    });
-}
+// Redundant function removed as it is now defined earlier
+
 
 function updateMapMarkers(data) {
     markers.forEach(m => map.removeLayer(m));
