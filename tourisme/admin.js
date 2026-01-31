@@ -55,6 +55,7 @@ function createAdminCard(loc, isPending) {
             <span class="card-badge" style="background: ${isPending ? '#F1C40F' : '#2ECC71'}">${isPending ? 'En attente' : 'En ligne'}</span>
         </div>
         <div class="card-info">
+            ${loc.stars > 0 ? `<div style="color: #f1c40f; font-size: 0.8rem; margin-bottom: 5px;">${"⭐".repeat(loc.stars)}</div>` : ''}
             <h3 class="card-title">${loc.title}</h3>
             <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 0.5rem;">📍 ${loc.venue}</p>
             ${loc.phone ? `<p style="color: var(--primary); font-size: 0.85rem; font-weight:700;">📞 ${loc.phone}</p>` : ''}

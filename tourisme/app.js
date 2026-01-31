@@ -91,6 +91,7 @@ function generateSampleData() {
                         lng: reg.lng + (Math.random() - 0.5) * 0.1,
                         price: isHotelOrAuberge ? `${(Math.floor(Math.random() * 5) + 2) * 10000} FCFA` : "Prix variable",
                         phone: isHotelOrAuberge ? `+221 33 ${Math.floor(100 + Math.random() * 900)} ${Math.floor(10 + Math.random() * 89)} ${Math.floor(10 + Math.random() * 89)}` : null,
+                        stars: isHotelOrAuberge ? Math.floor(Math.random() * 5) + 1 : 0,
                         gallery: [], // Initialisé vide
                         status: 'approved'
                     });
@@ -229,6 +230,7 @@ function submitPendingLocation(e) {
             title: document.getElementById('pubTitle').value,
             category: document.getElementById('pubCategory').value,
             region: document.getElementById('pubRegion').value,
+            stars: parseInt(document.getElementById('pubStars').value),
             venue: document.getElementById('pubAddress').value,
             phone: document.getElementById('pubPhone').value,
             price: document.getElementById('pubPrice').value ? `${document.getElementById('pubPrice').value} FCFA` : null,
@@ -284,11 +286,14 @@ function renderLocations() {
 
             const bgStyle = loc.image ? `url('${loc.image}')` : `linear-gradient(135deg, ${catInfo.color}22, ${catInfo.color}44)`;
 
+            const starsHtml = loc.stars > 0 ? `<div style="color: #f1c40f; margin-bottom: 5px;">${"⭐".repeat(loc.stars)}</div>` : '';
+
             card.innerHTML = `
                 <div class="card-img" style="background-image: ${bgStyle}; background-size: cover; background-position: center;">
                     <span class="card-badge" style="background: ${catInfo.color}">${catInfo.icon} ${catInfo.label}</span>
                 </div>
                 <div class="card-info">
+                    ${starsHtml}
                     <h3 class="card-title">${loc.title}</h3>
                     <div class="card-meta">
                         <div class="meta-item"><span>📌 ${loc.venue}</span></div>
@@ -355,6 +360,7 @@ function updateMapMarkers(data) {
 
         marker.bindPopup(`
             <div style="padding: 10px; min-width: 200px">
+                ${loc.stars > 0 ? `<div style="color: #f1c40f; margin-bottom: 5px;">${"⭐".repeat(loc.stars)}</div>` : ''}
                 <strong style="display:block; margin-bottom: 5px; font-size: 1.1rem;">${loc.title}</strong>
                 <span style="font-size:12px; color:#94A3B8; display:block; margin-bottom:8px;">${cat.icon} ${cat.label}</span>
                 <div style="display:flex; flex-direction:column; gap:5px;">
