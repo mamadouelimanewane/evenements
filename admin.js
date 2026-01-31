@@ -1,7 +1,7 @@
 const ADMIN_CODE = "Astelwane";
 
-// Categories definition (must match app.js)
-const categories = [
+// State Management
+let categories = JSON.parse(localStorage.getItem('dakarevents_categories')) || [
     { id: 'culture', label: 'Arts & Culture', color: '#FF8C00', icon: '🎭' },
     { id: 'sports', label: 'Sports & Bien-être', color: '#2ECC71', icon: '🏃' },
     { id: 'gastronomie', label: 'Gastronomie', color: '#E74C3C', icon: '🍽️' },
@@ -14,7 +14,7 @@ const categories = [
     { id: 'patrimoine', label: 'Patrimoine & Tourisme', color: '#7F8C8D', icon: '🏛️' }
 ];
 
-const quartiers = [
+let quartiers = JSON.parse(localStorage.getItem('dakarevents_quartiers')) || [
     { id: 'plateau', label: 'Plateau', lat: 14.67, lng: -17.44 },
     { id: 'almadies', label: 'Almadies', lat: 14.75, lng: -17.52 },
     { id: 'ngor', label: 'Ngor', lat: 14.75, lng: -17.51 },
@@ -30,32 +30,42 @@ let approvedEvents = JSON.parse(localStorage.getItem('dakarevents_events')) || [
 let pendingEvents = JSON.parse(localStorage.getItem('dakarevents_pending')) || [];
 let adminSearchTerm = '';
 
+// Assets Assets
+const demoImages = [
+    'assets/concert1.png',
+    'assets/festival1.png',
+    'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80'
+];
+
 // Shared Sample Data Logic
 function generateSampleData() {
     if (approvedEvents.length > 0) return;
 
     const titles = {
-        culture: ["Exposition Art Contemporain", "Pièce de Théâtre Sorano", "Slam & Poésie", "Festival Cinéma Nomade"],
-        sports: ["Yoga sur la Plage", "Marathon de Dakar", "Tournoi Lutte Traditionnelle", "Session Surf Ngor"],
-        gastronomie: ["Le Grand Thiéboudienne", "Marché Street Food", "Atelier Cuisine Locale", "Dégustation Mafé Fusion"],
-        education: ["Conférence Tech Dakar", "Coding Bootcamp", "Salon de l'Emploi", "Atelier Entrepreneuriat"],
-        religieux: ["Cérémonie du Sabar", "Veillée Traditionnelle", "Festivité du Gamou", "Rencontre Inter-Religieuse"],
-        famille: ["Atelier Créatif Enfants", "Spectacle Guignol Sénégalais", "Journée au Parc Hann", "Musée Interactif"],
-        environnement: ["Reboisement Set Setal", "Nettoyage Plage Yoff", "Conférence Écologie", "Marché Bio"],
-        business: ["Startup Weekend Dakar", "Networking B2B", "Pitch Competition", "Innovation Summit"],
-        mode: ["Dakar Fashion Week", "Pop-up Store Créateurs", "Atelier Couture Wax", "Défilé Design Émergent"],
-        patrimoine: ["Visite Guidée Gorée", "Circuit Architecture Plateau", "Excursion Lac Rose", "Portes Ouvertes Musée Théodore Monod"]
+        culture: ["Exposition Art", "Théâtre Sénégalais", "Slam Dakar", "Ciné Plein Air"],
+        sports: ["Yoga Dakar", "Marathon", "Lutte Sénégalaise", "Surf Session"],
+        gastronomie: ["Thiéboudienne Day", "Marché Bio", "Cuisine Locale", "Buffet Teranga"],
+        education: ["Conférence Tech", "Workshop Code", "Salon Pro", "Masterclass"],
+        religieux: ["Cérémonie Religieuse", "Veillée Spirituelle", "Fête Traditionnelle", "Rencontre de paix"],
+        famille: ["Kids Atelier", "Marionnettes", "Hann Zoo Visit", "Playground Fun"],
+        environnement: ["Eco Green Walk", "Beach Clean Day", "Green Talk", "Organic Market"],
+        business: ["Startup Networking", "B2B Meetup", "Pitch Night", "Innovation Lab"],
+        mode: ["Fashion Week Side", "Designer Pop-up", "Wax Workshop", "Couture Show"],
+        patrimoine: ["Gorée Tour", "Heritage Walk", "Village Artisanal Visit", "Museum Discovery"]
     };
 
     const today = new Date();
     for (let i = 1; i <= 150; i++) {
         const cat = categories[Math.floor(Math.random() * categories.length)];
         const quartier = quartiers[Math.floor(Math.random() * quartiers.length)];
-        const title = titles[cat.id][Math.floor(Math.random() * titles[cat.id].length)] + " #" + i;
+        const catTitles = titles[cat.id] || ["Événement Spécial"];
+        const title = catTitles[Math.floor(Math.random() * catTitles.length)] + " #" + i;
         const eventDate = new Date();
         eventDate.setDate(today.getDate() + Math.floor(Math.random() * 30));
 
-        let demoImage = Math.random() > 0.5 ? 'assets/concert1.png' : 'assets/festival1.png';
+        const demoImg = demoImages[Math.floor(Math.random() * demoImages.length)];
 
         approvedEvents.push({
             id: i,
@@ -63,12 +73,12 @@ function generateSampleData() {
             category: cat.id,
             date: eventDate.toISOString().split('T')[0],
             time: `${16 + Math.floor(Math.random() * 6)}:00`,
-            venue: `Lieu ${i} à ${quartier.label}`,
+            venue: `${quartier.label} Venue`,
             quartier: quartier.id,
             lat: quartier.lat + (Math.random() - 0.5) * 0.03,
             lng: quartier.lng + (Math.random() - 0.5) * 0.03,
             price: i % 3 === 0 ? "Gratuit" : `${(Math.floor(Math.random() * 10) + 2) * 1000} FCFA`,
-            image: demoImage,
+            image: demoImg,
             status: 'approved'
         });
     }
@@ -88,7 +98,7 @@ function handleAdminLogin(e) {
 }
 
 function initAdmin() {
-    generateSampleData(); // Ensure data exists
+    generateSampleData(); // Ensure initial data exists
     renderAll();
     setupAdminListeners();
 }
@@ -104,6 +114,9 @@ function renderAll() {
     updateStats();
     renderPending();
     renderApproved();
+    renderCategories();
+    renderQuartiers();
+    renderImagesGallery();
     renderCharts();
 }
 
@@ -116,8 +129,167 @@ function updateStats() {
     document.getElementById('statVenues').textContent = uniqueVenues;
 }
 
+// --- CRUD CATEGORIES ---
+function renderCategories() {
+    const list = document.getElementById('categoriesList');
+    if (!list) return;
+    list.innerHTML = categories.map(c => `
+        <tr>
+            <td style="font-size: 1.5rem;">${c.icon}</td>
+            <td><strong>${c.label}</strong><br><small style="color:var(--text-dim)">ID: ${c.id}</small></td>
+            <td><div style="display:flex; align-items:center; gap:8px;">
+                <span style="width:16px; height:16px; background:${c.color}; border-radius:50%;"></span>
+                <code>${c.color}</code>
+            </div></td>
+            <td>
+                <div style="display:flex; gap:5px;">
+                    <button class="action-btn" onclick="openEditCategory('${c.id}')"><small>✏️</small></button>
+                    <button class="action-btn btn-delete" onclick="deleteCategory('${c.id}')"><small>🗑️</small></button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function openAddCategory() {
+    document.getElementById('catModalTitle').textContent = "Nouvelle Catégorie";
+    document.getElementById('catOldId').value = "";
+    document.getElementById('catId').value = "";
+    document.getElementById('catLabel').value = "";
+    document.getElementById('catIcon').value = "🎯";
+    document.getElementById('catColor').value = "#FF8C00";
+    document.getElementById('categoryModal').style.display = 'flex';
+}
+
+function openEditCategory(id) {
+    const cat = categories.find(c => c.id === id);
+    if (!cat) return;
+    document.getElementById('catModalTitle').textContent = "Modifier Catégorie";
+    document.getElementById('catOldId').value = cat.id;
+    document.getElementById('catId').value = cat.id;
+    document.getElementById('catLabel').value = cat.label;
+    document.getElementById('catIcon').value = cat.icon;
+    document.getElementById('catColor').value = cat.color;
+    document.getElementById('categoryModal').style.display = 'flex';
+}
+
+function handleCategorySubmit(e) {
+    e.preventDefault();
+    const oldId = document.getElementById('catOldId').value;
+    const newId = document.getElementById('catId').value;
+    const catData = {
+        id: newId,
+        label: document.getElementById('catLabel').value,
+        icon: document.getElementById('catIcon').value,
+        color: document.getElementById('catColor').value
+    };
+
+    if (oldId) {
+        const idx = categories.findIndex(c => c.id === oldId);
+        categories[idx] = catData;
+        // Update linked events
+        approvedEvents.forEach(ev => { if (ev.category === oldId) ev.category = newId; });
+    } else {
+        categories.push(catData);
+    }
+
+    saveCategories();
+    closeModal('categoryModal');
+}
+
+function deleteCategory(id) {
+    if (confirm("Supprimer cette catégorie ? Les événements liés resteront mais perdront leur style.")) {
+        categories = categories.filter(c => c.id !== id);
+        saveCategories();
+    }
+}
+
+// --- CRUD QUARTIERS (ESTABLISHMENTS) ---
+function renderQuartiers() {
+    const list = document.getElementById('quartiersList');
+    if (!list) return;
+    list.innerHTML = quartiers.map(q => `
+        <tr>
+            <td><strong>${q.label}</strong><br><small style="color:var(--text-dim)">ID: ${q.id}</small></td>
+            <td><code>${q.lat}, ${q.lng}</code></td>
+            <td>
+                <div style="display:flex; gap:5px;">
+                    <button class="action-btn" onclick="openEditQuartier('${q.id}')"><small>✏️</small></button>
+                    <button class="action-btn btn-delete" onclick="deleteQuartier('${q.id}')"><small>🗑️</small></button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function openAddQuartier() {
+    document.getElementById('quartierModalTitle').textContent = "Nouveau Lieu";
+    document.getElementById('quartierOldId').value = "";
+    document.getElementById('quartierId').value = "";
+    document.getElementById('quartierLabel').value = "";
+    document.getElementById('quartierLat').value = 14.71;
+    document.getElementById('quartierLng').value = -17.44;
+    document.getElementById('quartierModal').style.display = 'flex';
+}
+
+function openEditQuartier(id) {
+    const q = quartiers.find(item => item.id === id);
+    if (!q) return;
+    document.getElementById('quartierModalTitle').textContent = "Modifier Lieu";
+    document.getElementById('quartierOldId').value = q.id;
+    document.getElementById('quartierId').value = q.id;
+    document.getElementById('quartierLabel').value = q.label;
+    document.getElementById('quartierLat').value = q.lat;
+    document.getElementById('quartierLng').value = q.lng;
+    document.getElementById('quartierModal').style.display = 'flex';
+}
+
+function handleQuartierSubmit(e) {
+    e.preventDefault();
+    const oldId = document.getElementById('quartierOldId').value;
+    const newId = document.getElementById('quartierId').value;
+    const qData = {
+        id: newId,
+        label: document.getElementById('quartierLabel').value,
+        lat: parseFloat(document.getElementById('quartierLat').value),
+        lng: parseFloat(document.getElementById('quartierLng').value)
+    };
+
+    if (oldId) {
+        const idx = quartiers.findIndex(q => q.id === oldId);
+        quartiers[idx] = qData;
+        approvedEvents.forEach(ev => { if (ev.quartier === oldId) ev.quartier = newId; });
+    } else {
+        quartiers.push(qData);
+    }
+
+    saveQuartiers();
+    closeModal('quartierModal');
+}
+
+function deleteQuartier(id) {
+    if (confirm("Supprimer ce lieu ?")) {
+        quartiers = quartiers.filter(q => q.id !== id);
+        saveQuartiers();
+    }
+}
+
+// --- IMAGES GALLERY ---
+function renderImagesGallery() {
+    const container = document.getElementById('imagesGallery');
+    if (!container) return;
+    container.innerHTML = demoImages.map(url => `
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+            <div style="height:120px; background-image:url('${url}'); background-size:cover; background-position:center;"></div>
+            <div style="padding:10px; font-size:0.7rem; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis;">${url}</div>
+        </div>
+    `).join('');
+}
+
+// --- STANDARD EVENTS LOGIC ---
 function renderPending() {
     const list = document.getElementById('pendingList');
+    if (!list) return;
     if (pendingEvents.length === 0) {
         list.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 3rem; color: var(--text-dim);">Rien en attente.</td></tr>';
         return;
@@ -140,6 +312,7 @@ function renderPending() {
 
 function renderApproved() {
     const list = document.getElementById('approvedList');
+    if (!list) return;
     const filtered = approvedEvents.filter(e =>
         e.title.toLowerCase().includes(adminSearchTerm) ||
         e.venue.toLowerCase().includes(adminSearchTerm)
@@ -164,7 +337,6 @@ function renderCharts() {
     const catContainer = document.getElementById('categoryChart');
     const venueContainer = document.getElementById('venueChart');
 
-    // Category Chart
     const catStats = categories.map(c => ({
         label: c.label,
         color: c.color,
@@ -183,7 +355,6 @@ function renderCharts() {
         `).join('');
     }
 
-    // Venue Top 5
     const venues = {};
     approvedEvents.forEach(e => venues[e.venue] = (venues[e.venue] || 0) + 1);
     const topVenues = Object.entries(venues).sort((a, b) => b[1] - a[1]).slice(0, 5);
@@ -201,6 +372,7 @@ function renderCharts() {
     }
 }
 
+// --- SYSTEM ---
 function approveEvent(id) {
     const event = pendingEvents.find(e => e.id === id);
     if (event) {
@@ -228,35 +400,30 @@ function deleteApproved(id) {
 function openEdit(id) {
     const event = approvedEvents.find(e => e.id === id);
     if (!event) return;
-
     document.getElementById('editId').value = event.id;
     document.getElementById('editTitle').value = event.title;
     document.getElementById('editDate').value = event.date;
     document.getElementById('editVenue').value = event.venue;
-
     document.getElementById('editEventModal').style.display = 'flex';
 }
 
-function closeEdit() {
-    document.getElementById('editEventModal').style.display = 'none';
-}
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
 function handleEditSubmit(e) {
     e.preventDefault();
     const id = parseInt(document.getElementById('editId').value);
     const index = approvedEvents.findIndex(e => e.id === id);
-
     if (index !== -1) {
         approvedEvents[index].title = document.getElementById('editTitle').value;
         approvedEvents[index].date = document.getElementById('editDate').value;
         approvedEvents[index].venue = document.getElementById('editVenue').value;
         saveData();
-        closeEdit();
+        closeModal('editEventModal');
     }
 }
 
 function showTab(tab) {
-    const tabs = ['dashboardTab', 'pendingTab', 'eventsTab'];
+    const tabs = ['dashboardTab', 'pendingTab', 'eventsTab', 'categoriesTab', 'quartiersTab', 'imagesTab'];
     tabs.forEach(t => {
         const el = document.getElementById(t);
         if (el) el.style.display = t.startsWith(tab) ? 'block' : 'none';
@@ -274,11 +441,30 @@ function saveData() {
     renderAll();
 }
 
+function saveCategories() {
+    localStorage.setItem('dakarevents_categories', JSON.stringify(categories));
+    renderAll();
+}
+
+function saveQuartiers() {
+    localStorage.setItem('dakarevents_quartiers', JSON.stringify(quartiers));
+    renderAll();
+}
+
+// Global Exports
 window.handleAdminLogin = handleAdminLogin;
 window.showTab = showTab;
 window.approveEvent = approveEvent;
 window.deletePending = deletePending;
 window.deleteApproved = deleteApproved;
 window.openEdit = openEdit;
-window.closeEdit = closeEdit;
 window.handleEditSubmit = handleEditSubmit;
+window.closeModal = closeModal;
+window.openAddCategory = openAddCategory;
+window.openEditCategory = openEditCategory;
+window.handleCategorySubmit = handleCategorySubmit;
+window.deleteCategory = deleteCategory;
+window.openAddQuartier = openAddQuartier;
+window.openEditQuartier = openEditQuartier;
+window.handleQuartierSubmit = handleQuartierSubmit;
+window.deleteQuartier = deleteQuartier;

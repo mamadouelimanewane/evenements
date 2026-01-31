@@ -212,6 +212,9 @@
                 <button class="tab-btn" id="tab-pending" onclick="showTab('pending')">📥 Attente (<span
                         id="pendingCount">0</span>)</button>
                 <button class="tab-btn" id="tab-events" onclick="showTab('events')">✅ Événements</button>
+                <button class="tab-btn" id="tab-categories" onclick="showTab('categories')">🏷️ Catégories</button>
+                <button class="tab-btn" id="tab-quartiers" onclick="showTab('quartiers')">📍 Établissements</button>
+                <button class="tab-btn" id="tab-images" onclick="showTab('images')">🖼️ Images & Design</button>
                 <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
                 <a href="index.html"
                     style="color: var(--text-dim); text-decoration: none; padding-left: 12px; font-size: 0.9rem;">🌍
@@ -275,53 +278,128 @@
                 </div>
             </div>
 
-            <!-- TAB: EVENTS -->
-            <div id="eventsTab" style="display: none;">
+            <!-- TAB: CATEGORIES -->
+            <div id="categoriesTab" style="display: none;">
                 <div class="admin-header">
-                    <h2>Événements en ligne</h2>
-                    <div class="search-box"
-                        style="background: var(--admin-card); border: 1px solid var(--border); padding: 8px 15px; border-radius: 12px;">
-                        <input type="text" id="adminSearch" placeholder="Rechercher..."
-                            style="background:transparent; border:none; color:white; outline:none;">
-                    </div>
+                    <h2>Gestion des Catégories</h2>
+                    <button class="btn-primary" onclick="openAddCategory()">+ Nouvelle Catégorie</button>
                 </div>
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Image</th>
-                            <th>Titre</th>
-                            <th>Détails</th>
+                            <th>Icon</th>
+                            <th>Label</th>
+                            <th>Couleur</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="approvedList"></tbody>
+                    <tbody id="categoriesList"></tbody>
                 </table>
+            </div>
+
+            <!-- TAB: QUARTIERS/ESTABLISHMENTS -->
+            <div id="quartiersTab" style="display: none;">
+                <div class="admin-header">
+                    <h2>Lieux & Établissements</h2>
+                    <button class="btn-primary" onclick="openAddQuartier()">+ Nouveau Lieu</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Coordonnées (Lat, Lng)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quartiersList"></tbody>
+                </table>
+            </div>
+
+            <!-- TAB: IMAGES -->
+            <div id="imagesTab" style="display: none;">
+                <div class="admin-header">
+                    <h2>Bibliothèque d'Images</h2>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;"
+                    id="imagesGallery">
+                    <!-- Images will be listed here -->
+                </div>
+                <div
+                    style="margin-top: 3rem; background: var(--admin-card); padding: 2rem; border-radius: 20px; border: 1px solid var(--border);">
+                    <h3>Générateur d'Images AI (Concept)</h3>
+                    <p style="color: var(--text-dim); margin-bottom: 1.5rem;">Entrez un prompt pour générer un nouveau
+                        visuel d'événement.</p>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="aiPrompt" class="form-input"
+                            placeholder="Ex: Concert de jazz sous les étoiles à Dakar..." style="flex: 1;">
+                        <button class="btn-primary"
+                            onclick="alert('Fonctionnalité en cours de liaison avec l\'API de génération...')">Générer</button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- MODAL: Edit Event -->
-    <div id="editEventModal" class="modal-overlay" style="display: none;">
+    <!-- MODAL: Edit/Add Category -->
+    <div id="categoryModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
-            <h3>Modifier l'Événement</h3>
-            <form onsubmit="handleEditSubmit(event)" style="margin-top: 1.5rem;">
-                <input type="hidden" id="editId">
+            <h3 id="catModalTitle">Catégorie</h3>
+            <form onsubmit="handleCategorySubmit(event)" style="margin-top: 1.5rem;">
+                <input type="hidden" id="catOldId">
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label>Titre</label>
-                    <input type="text" id="editTitle" class="form-input" required>
+                    <label>ID (ex: sport)</label>
+                    <input type="text" id="catId" class="form-input" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Label (ex: Sports & Bien-être)</label>
+                    <input type="text" id="catLabel" class="form-input" required>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div class="form-group">
-                        <label>Date</label>
-                        <input type="text" id="editDate" class="form-input" required>
+                        <label>Icon (Emoji)</label>
+                        <input type="text" id="catIcon" class="form-input" required>
                     </div>
                     <div class="form-group">
-                        <label>Lieu</label>
-                        <input type="text" id="editVenue" class="form-input" required>
+                        <label>Couleur (Hex)</label>
+                        <input type="color" id="catColor" class="form-input" style="height: 45px; padding: 5px;">
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 2rem;">
-                    <button type="button" class="action-btn" onclick="closeEdit()" style="flex:1">Annuler</button>
+                    <button type="button" class="action-btn" onclick="closeModal('categoryModal')"
+                        style="flex:1">Annuler</button>
+                    <button type="submit" class="btn-primary" style="flex:2">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Edit/Add Quartier -->
+    <div id="quartierModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3 id="quartierModalTitle">Établissement / Lieu</h3>
+            <form onsubmit="handleQuartierSubmit(event)" style="margin-top: 1.5rem;">
+                <input type="hidden" id="quartierOldId">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>ID (ex: almadies)</label>
+                    <input type="text" id="quartierId" class="form-input" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Nom du Lieu</label>
+                    <input type="text" id="quartierLabel" class="form-input" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label>Latitude</label>
+                        <input type="number" id="quartierLat" step="0.000001" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Longitude</label>
+                        <input type="number" id="quartierLng" step="0.000001" class="form-input" required>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 2rem;">
+                    <button type="button" class="action-btn" onclick="closeModal('quartierModal')"
+                        style="flex:1">Annuler</button>
                     <button type="submit" class="btn-primary" style="flex:2">Enregistrer</button>
                 </div>
             </form>

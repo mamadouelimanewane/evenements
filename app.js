@@ -15,7 +15,8 @@ const categories = savedCategories || [
     { id: 'patrimoine', label: 'Patrimoine & Tourisme', color: '#7F8C8D', icon: '🏛️' }
 ];
 
-const quartiers = [
+const savedQuartiers = JSON.parse(localStorage.getItem('dakarevents_quartiers'));
+const quartiers = savedQuartiers || [
     { id: 'plateau', label: 'Plateau', lat: 14.67, lng: -17.44 },
     { id: 'almadies', label: 'Almadies', lat: 14.75, lng: -17.52 },
     { id: 'ngor', label: 'Ngor', lat: 14.75, lng: -17.51 },

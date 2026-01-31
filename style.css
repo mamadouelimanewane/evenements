@@ -328,7 +328,8 @@ body {
 .map-overlay-legend {
     position: absolute;
     bottom: 30px;
-    left: 20px;
+    right: 20px;
+    /* Déplacé à droite pour libérer Dakar à gauche */
     background: rgba(22, 25, 31, 0.9);
     backdrop-filter: blur(12px);
     border: 1px solid var(--border);
@@ -352,7 +353,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 300px;
+    max-height: 250px;
     overflow-y: auto;
 }
 
@@ -361,8 +362,8 @@ body {
     align-items: center;
     gap: 10px;
     cursor: pointer;
-    padding: 4px;
-    border-radius: 6px;
+    padding: 6px;
+    border-radius: 8px;
     transition: background 0.2s;
 }
 
@@ -381,12 +382,13 @@ body {
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    flex: 1;
 }
 
 .dot-indicator {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     display: inline-block;
 }
@@ -399,6 +401,12 @@ body {
     flex-direction: column;
     gap: 10px;
     z-index: 1000;
+}
+
+/* On descend les contrôles de zoom natifs pour ne pas gêner */
+.leaflet-bottom.leaflet-right {
+    bottom: 350px !important;
+    /* Au-dessus de la légende */
 }
 
 .map-fullscreen {

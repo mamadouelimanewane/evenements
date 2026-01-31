@@ -39,7 +39,7 @@ let activeFilters = {
     category: null,
     region: null,
     search: '',
-    mapCategories: new Set(categories.map(c => c.id)) // Toutes les catégories par défaut
+    mapCategories: new Set() // Vide au démarrage comme demandé
 };
 let currentView = 'map';
 
@@ -47,10 +47,10 @@ let currentView = 'map';
 // INITIALISATION
 // ===================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Force refresh sample data to include new images and fix locations
-    if (!localStorage.getItem('tourisme_v3')) {
+    // Force refresh sample data for version v9 (contextual images)
+    if (!localStorage.getItem('tourisme_v9')) {
         localStorage.removeItem('senegaltourisme_locations');
-        localStorage.setItem('tourisme_v3', 'true');
+        localStorage.setItem('tourisme_v9', 'true');
         tourismData = [];
     }
     generateSampleData();
@@ -67,60 +67,154 @@ function generateSampleData() {
     if (tourismData.length > 0) return;
 
     const names = {
-        hotels: ["King Fahd Palace", "Terrou-Bi Resort", "Lamantin Beach Resort", "Royal Decameron Baobab", "Hôtel de la Poste Saint-Louis", "Ecolodge de Simal", "Esperanto Lodge Kafountine"],
-        auberges: ["Auberge du Désert", "Auberge Marie-Lucien", "Le Campement du Saloum", "Auberge de la Plage", "Auberge Culturelle"],
-        sites: ["Île de Gorée", "Quartier Colonial Saint-Louis", "Maison des Esclaves", "Fort d'Estrées", "Vestiges de Carabane"],
-        nature: ["Parc National du Niokolo-Koba", "Réserve de Bandia", "Djoudj Bird Sanctuary", "Forêt de Casamance", "Delta du Saloum"],
-        plages: ["Plage des Almadies", "Plage de Cap Skirring", "Plage de Toubab Dialaw", "Plage de Popenguine", "Plage de Ngor"],
-        restaurants: ["Le Lagon 1", "La Fourchette", "Chez Loutcha", "Restaurant du Fleuve", "Le Jardin Thaï"],
-        culture: ["Musée Théodore Monod", "Musée des Civilisations Noires", "Village des Arts", "IFAN Dakar"],
-        artisanat: ["Marché Soumbédioune", "Marché HLM", "Marché Kermel", "Village Artisanal de Thiès"],
-        loisirs: ["Surf à Dakar", "Golf de Saly", "Accrobaobab", "Pêche au gros à Dakar"],
-        monuments: ["Monument de la Renaissance Africaine", "Phare des Mamelles", "Grande Mosquée de Dakar"],
-        excursions: ["Visite du Lac Rose", "Désert de Lompoul", "Excursion au Delta du Saloum", "Safari à Bandia"]
+        hotels: ["King Fahd Palace", "Terrou-Bi Resort", "Lamantin Beach Resort", "Royal Decameron Baobab", "Hôtel de la Poste Saint-Louis", "Ecolodge de Simal", "Esperanto Lodge Kafountine", "Radisson Blu", "Pullman Dakar", "Novotel", "Hôtel Savana", "Le Lodge Saly", "Keur Saloum", "Hôtel Baobab Belge"],
+        auberges: ["Auberge du Désert", "Auberge Marie-Lucien", "Le Campement du Saloum", "Auberge de la Plage", "Auberge Culturelle", "Case de l'Oncle Phil", "Auberge de l'Océan", "L'Oasis Dakar"],
+        sites: ["Île de Gorée", "Quartier Colonial Saint-Louis", "Maison des Esclaves", "Fort d'Estrées", "Vestiges de Carabane", "Cercle Mégalithique", "Village Artisanal", "Désert de Lompoul"],
+        nature: ["Parc National du Niokolo-Koba", "Réserve de Bandia", "Djoudj Bird Sanctuary", "Forêt de Casamance", "Delta du Saloum", "Lagune de la Somone", "Île de la Madeleine"],
+        plages: ["Plage des Almadies", "Plage de Cap Skirring", "Plage de Toubab Dialaw", "Plage de Popenguine", "Plage de Ngor", "Plage de Yoff", "Plage de Saly"],
+        restaurants: ["Le Lagon 1", "La Fourchette", "Chez Loutcha", "Restaurant du Fleuve", "Le Jardin Thaï", "Café de Rome", "Le Ngor"],
+        culture: ["Musée Théodore Monod", "Musée des Civilisations Noires", "Village des Arts", "IFAN Dakar", "Grand Théâtre Doudou Ndiaye Rose"],
+        artisanat: ["Marché Soumbédioune", "Marché HLM", "Marché Kermel", "Village Artisanal de Thiès", "Marché Sandaga"],
+        loisirs: ["Surf à Dakar", "Golf de Saly", "Accrobaobab", "Pêche au gros à Dakar", "Cinéma Pathé Dakar"],
+        monuments: ["Monument de la Renaissance Africaine", "Phare des Mamelles", "Grande Mosquée de Dakar", "Cathédrale de Dakar"],
+        excursions: ["Visite du Lac Rose", "Désert de Lompoul", "Excursion au Delta du Saloum", "Safari à Bandia", "Excursion Djoudj"]
     };
 
     let counter = 1;
-    regions.forEach(reg => {
-        categories.forEach(cat => {
-            const list = names[cat.id];
-            if (list) {
-                list.forEach(name => {
-                    const isHotelOrAuberge = cat.id === 'hotels' || cat.id === 'auberges';
+    const totalSites = 200;
+    const coastalRegions = ['dakar', 'petite-cote', 'saint-louis', 'casamance', 'sine-saloum', 'lac-rose'];
 
-                    // Assign demonstration images
-                    let demoImage = null;
-                    let demoGallery = [];
-                    if (cat.id === 'hotels') {
-                        demoImage = 'assets/hotel1.png';
-                        demoGallery = ['assets/hotel1.png', 'assets/hotel2.png'];
-                    } else if (cat.id === 'auberges') {
-                        demoImage = 'assets/auberge1.png';
-                        demoGallery = ['assets/auberge1.png'];
-                    } else if (cat.id === 'nature') {
-                        demoImage = 'assets/nature1.png';
-                        demoGallery = ['assets/nature1.png'];
-                    }
+    for (let i = 0; i < totalSites; i++) {
+        let cat = categories[Math.floor(Math.random() * categories.length)];
+        const list = names[cat.id] || [];
+        const baseName = list[Math.floor(Math.random() * list.length)] || "Lieu Touristique";
 
-                    tourismData.push({
-                        id: counter++,
-                        title: `${name} - ${reg.label}`,
-                        category: cat.id,
-                        venue: `${name}, région de ${reg.label}`,
-                        region: reg.id,
-                        lat: reg.lat + (Math.random() - 0.5) * 0.4, // Augmentation de la dispersion
-                        lng: reg.lng + (Math.random() - 0.5) * 0.4,
-                        price: isHotelOrAuberge ? `${(Math.floor(Math.random() * 5) + 2) * 10000} FCFA` : "Prix variable",
-                        phone: isHotelOrAuberge ? `+221 33 ${Math.floor(100 + Math.random() * 900)} ${Math.floor(10 + Math.random() * 89)} ${Math.floor(10 + Math.random() * 89)}` : null,
-                        stars: isHotelOrAuberge ? Math.floor(Math.random() * 5) + 1 : 0,
-                        image: demoImage,
-                        gallery: demoGallery,
-                        status: 'approved'
-                    });
-                });
-            }
+        // Logical location fixes
+        let reg = regions[Math.floor(Math.random() * regions.length)];
+        if (baseName.includes("Dakar") || baseName.includes("Almadies") || baseName.includes("Soumbédioune") ||
+            baseName.includes("Kermel") || baseName.includes("Renaissance") || baseName.includes("Mamelles") ||
+            baseName.includes("Ngor") || baseName.includes("Gorée") || baseName.includes("Plateau") || baseName.includes("Rome") || baseName.includes("Lagon")) {
+            reg = regions[0]; // Force Dakar
+        } else if (baseName.includes("Saly") || baseName.includes("Mbour") || baseName.includes("Somone") || baseName.includes("Popenguine")) {
+            reg = regions[1]; // Force Petite Côte
+        } else if (baseName.includes("Saint-Louis") || baseName.includes("Djoudj")) {
+            reg = regions[2]; // Force Saint-Louis
+        } else if (baseName.includes("Casamance") || baseName.includes("Ziguinchor") || baseName.includes("Cap Skirring") || baseName.includes("Kafountine")) {
+            reg = regions[3]; // Force Casamance
+        } else if (baseName.includes("Saloum")) {
+            reg = regions[4]; // Force Saloum
+        } else if (baseName.includes("Lac Rose") || baseName.includes("Lompoul")) {
+            reg = regions[6]; // Force Lac Rose
+        }
+
+        if (cat.id === 'plages' && !coastalRegions.includes(reg.id)) {
+            reg = regions[0];
+        }
+
+        const name = `${baseName} #${counter}`;
+        const isHotelOrAuberge = cat.id === 'hotels' || cat.id === 'auberges';
+
+        // Tight dispersion to avoid ocean
+        let spread = (reg.id === 'dakar') ? 0.08 : 0.3;
+        let latOff = (Math.random() - 0.5) * spread;
+        let lngOff = (Math.random() - 0.5) * spread;
+
+        // Force stay on land (Simple bounding boxes relative to region center)
+        if (reg.id === 'dakar') {
+            if (lngOff < -0.05) lngOff = -0.05; // No ocean
+            if (latOff > 0.05) latOff = 0.05;
+        } else if (reg.id === 'petite-cote') {
+            if (lngOff < 0) lngOff = 0.02; // No ocean
+        } else if (reg.id === 'saint-louis') {
+            if (lngOff < -0.01) lngOff = 0; // No ocean
+        }
+
+        // Contextual Image Mapping
+        const contextImages = {
+            hotels: [
+                'https://images.unsplash.com/photo-1566073771259-6a8506099945',
+                'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b',
+                'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb'
+            ],
+            auberges: [
+                'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4',
+                'https://images.unsplash.com/photo-1555854816-8097584bb531',
+                'https://images.unsplash.com/photo-1445013544569-72d07ec046c4'
+            ],
+            plages: [
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
+                'https://images.unsplash.com/photo-1519046904884-53103b34b206',
+                'https://images.unsplash.com/photo-1473116763249-2faaef81ccda'
+            ],
+            nature: [
+                'https://images.unsplash.com/photo-1516428990200-c1bc0a69d4ad',
+                'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e',
+                'https://images.unsplash.com/photo-1523805009345-7448845a90d2'
+            ],
+            restaurants: [
+                'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
+                'https://images.unsplash.com/photo-1552566626-52f8b828add9',
+                'https://images.unsplash.com/photo-1414235077428-338989a2e8c0'
+            ],
+            culture: [
+                'https://images.unsplash.com/photo-1523895663372-62bb52cd4a53',
+                'https://images.unsplash.com/photo-1518998053502-53cc8de43b78',
+                'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3'
+            ],
+            sites: [
+                'https://images.unsplash.com/photo-1548013146-72479768bada',
+                'https://images.unsplash.com/photo-1564507592334-1e40bb9646da',
+                'https://images.unsplash.com/photo-1583320291931-1e967568edfa'
+            ],
+            monuments: [
+                'https://images.unsplash.com/photo-1590059232617-6a848a39f7b3',
+                'https://images.unsplash.com/photo-1518709268805-4e9042af9f23',
+                'https://images.unsplash.com/photo-1544735048-35756ea05723'
+            ],
+            artisanat: [
+                'https://images.unsplash.com/photo-1590402444527-0805ea2be874',
+                'https://images.unsplash.com/photo-1512418490979-92798ced43a9',
+                'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7'
+            ],
+            loisirs: [
+                'https://images.unsplash.com/photo-1502680390469-be75c86b6369',
+                'https://images.unsplash.com/photo-1534067783941-51c9c23eccfd',
+                'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b'
+            ],
+            excursions: [
+                'https://images.unsplash.com/photo-1533105079780-92b9be482077',
+                'https://images.unsplash.com/photo-1469811639458-eb961d5eaa10',
+                'https://images.unsplash.com/photo-1506466010722-395ee2bef877'
+            ]
+        };
+
+        const currentCatImages = contextImages[cat.id] || contextImages['sites'];
+        const randomImgId = Math.floor(Math.random() * currentCatImages.length);
+
+        let demoImage = `${currentCatImages[randomImgId]}?auto=format&fit=crop&w=600&q=80`;
+        let demoGallery = currentCatImages.map(img => `${img}?auto=format&fit=crop&w=400&q=80`);
+
+        // Override with local assets for specific categories to keep the curated feel
+        if (cat.id === 'hotels' && Math.random() > 0.5) demoImage = 'assets/hotel1.png';
+        if (cat.id === 'auberges' && Math.random() > 0.5) demoImage = 'assets/auberge1.png';
+        if (cat.id === 'nature' && Math.random() > 0.5) demoImage = 'assets/nature1.png';
+
+        tourismData.push({
+            id: counter++,
+            title: name,
+            category: cat.id,
+            venue: `${name}, ${reg.label}`,
+            region: reg.id,
+            lat: reg.lat + latOff,
+            lng: reg.lng + lngOff,
+            price: isHotelOrAuberge ? `${(Math.floor(Math.random() * 5) + 2) * 10000} FCFA` : "Prix variable",
+            phone: isHotelOrAuberge ? `+221 33 ${Math.floor(100 + Math.random() * 900)} ${Math.floor(10 + Math.random() * 89)} ${Math.floor(10 + Math.random() * 89)}` : null,
+            stars: isHotelOrAuberge ? Math.floor(Math.random() * 5) + 1 : 0,
+            image: demoImage,
+            gallery: demoGallery,
+            status: 'approved'
         });
-    });
+    }
     localStorage.setItem('senegaltourisme_locations', JSON.stringify(tourismData));
 }
 
@@ -302,7 +396,7 @@ function renderLocations() {
 
             const galleryHtml = loc.gallery && loc.gallery.length > 0
                 ? `<div class="mini-gallery" style="display:flex; gap:5px; margin-top:10px; overflow-x:auto; padding-bottom:5px;">
-                    ${loc.gallery.map(img => `<img src="${img}" style="width:60px; height:45px; object-fit:cover; border-radius:4px; flex-shrink:0;">`).join('')}
+                    ${loc.gallery.map(img => `<img src="${img}" onerror="this.src='https://images.unsplash.com/photo-1523906834658-6e24ef2346f9?auto=format&fit=crop&w=100&q=80'" style="width:60px; height:45px; object-fit:cover; border-radius:4px; flex-shrink:0;">`).join('')}
                    </div>`
                 : '';
 
@@ -346,7 +440,8 @@ function switchView(mode) {
 
 function initMap() {
     if (map) return;
-    map = L.map('mainMap', { zoomControl: false }).setView([14.4974, -14.4524], 7); // Center of Senegal
+    // Centrage décalé vers l'Ouest pour éviter le chevauchement avec la légende à droite
+    map = L.map('mainMap', { zoomControl: false }).setView([14.45, -15.8], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', { attribution: 'OSM France' }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
     document.getElementById('maximizeMapControl').onclick = () => document.getElementById('mapView').classList.toggle('map-fullscreen');
@@ -380,18 +475,27 @@ function updateMapMarkers(data) {
         const cat = categories.find(c => c.id === loc.category) || categories[0];
         const marker = L.circleMarker([loc.lat, loc.lng], { radius: 10, fillColor: cat.color, color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
 
+        const imgHtml = loc.image ? `<img src="${loc.image}" onerror="this.src='https://images.unsplash.com/photo-1523906834658-6e24ef2346f9?auto=format&fit=crop&w=400&q=80'" style="width:100%; height:110px; object-fit:cover; border-radius:12px; margin-bottom:12px;">` : '';
+        const galleryHtml = loc.gallery && loc.gallery.length > 0
+            ? `<div style="display:flex; gap:5px; margin-bottom:12px; overflow-x:auto;">
+                ${loc.gallery.map(img => `<img src="${img}" onerror="this.src='https://images.unsplash.com/photo-1523906834658-6e24ef2346f9?auto=format&fit=crop&w=100&q=80'" style="width:50px; height:40px; object-fit:cover; border-radius:6px;">`).join('')}
+               </div>`
+            : '';
+
         marker.bindPopup(`
-            <div style="padding: 10px; min-width: 200px">
+            <div style="padding: 5px; min-width: 220px">
+                ${imgHtml}
                 ${loc.stars > 0 ? `<div style="color: #f1c40f; margin-bottom: 5px;">${"⭐".repeat(loc.stars)}</div>` : ''}
-                <strong style="display:block; margin-bottom: 5px; font-size: 1.1rem;">${loc.title}</strong>
-                <span style="font-size:12px; color:#94A3B8; display:block; margin-bottom:8px;">${cat.icon} ${cat.label}</span>
-                <div style="display:flex; flex-direction:column; gap:5px;">
-                    <span style="font-size:13px; color:#fff">📍 ${loc.venue}</span>
+                <strong style="display:block; margin-bottom: 5px; font-size: 1.1rem; color: #fff;">${loc.title}</strong>
+                <span style="font-size:12px; color:#94A3B8; display:block; margin-bottom:10px;">${cat.icon} ${cat.label}</span>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <span style="font-size:13px; color:#E2E8F0;">📍 ${loc.venue}</span>
                     ${loc.phone ? `<span style="font-size:13px; color:var(--primary); font-weight:700;">📞 ${loc.phone}</span>` : ''}
                     ${loc.price ? `<span style="font-size:14px; color:#2ECC71; font-weight:800; margin-top:5px;">🏷️ ${loc.price} / nuit</span>` : ''}
                 </div>
+                ${galleryHtml}
                 <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}', '_blank')" 
-                        style="margin-top: 15px; width: 100%; padding: 8px; border-radius: 8px; border: none; background: #4285F4; color: white; font-weight: 700; cursor: pointer;">
+                        style="margin-top: 10px; width: 100%; padding: 10px; border-radius: 10px; border: none; background: #4285F4; color: white; font-weight: 700; cursor: pointer;">
                     Itinéraire Maps
                 </button>
             </div>
