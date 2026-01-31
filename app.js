@@ -40,7 +40,7 @@ let activeFilters = {
     sidebarCategory: null,
     quartier: null,
     search: '',
-    mapCategories: new Set(categories.map(c => c.id))
+    mapCategories: new Set() // Démarrer avec aucune catégorie cochée
 };
 let currentView = 'map';
 
@@ -319,7 +319,8 @@ function setupMapLegend() {
     categories.forEach(cat => {
         const item = document.createElement('div');
         item.className = 'legend-item';
-        item.innerHTML = `<input type="checkbox" id="map-cat-${cat.id}" checked><label for="map-cat-${cat.id}"><span class="dot-indicator" style="background: ${cat.color}"></span> ${cat.icon} ${cat.label}</label>`;
+        // Décoché par défaut - l'utilisateur doit cocher pour voir les événements
+        item.innerHTML = `<input type="checkbox" id="map-cat-${cat.id}"><label for="map-cat-${cat.id}"><span class="dot-indicator" style="background: ${cat.color}"></span> ${cat.icon} ${cat.label}</label>`;
         item.querySelector('input').onchange = (e) => { if (e.target.checked) activeFilters.mapCategories.add(cat.id); else activeFilters.mapCategories.delete(cat.id); renderEvents(); };
         legendContainer.appendChild(item);
     });
