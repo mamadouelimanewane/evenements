@@ -358,12 +358,24 @@ function updateMapMarkers(data) {
         const cat = categories.find(c => c.id === e.category) || categories[0];
         const marker = L.circleMarker([e.lat, e.lng], { radius: 12, fillColor: cat.color, color: '#fff', weight: 3, fillOpacity: 1 }).addTo(map);
 
+        const q = quartiers.find(item => item.id === e.quartier);
+        const galleryHtml = q && q.gallery && q.gallery.length > 0
+            ? `<div style="display:flex; gap:5px; margin:10px 0; overflow-x:auto; padding-bottom:5px;">
+                ${q.gallery.map(img => `<img src="${img}" style="width:60px; height:45px; object-fit:cover; border-radius:4px; flex-shrink:0; border: 1px solid #eee;">`).join('')}
+               </div>`
+            : '';
+        const descHtml = q && q.desc ? `<p style="font-size:11px; color:#777; font-style:italic; margin-top:5px; line-height:1.3; border-left: 2px solid #ddd; padding-left: 8px;">${q.desc}</p>` : '';
+
         marker.bindPopup(`
-            <div class="map-popup-custom" style="padding: 10px; min-width: 200px">
+            <div class="map-popup-custom" style="padding: 10px; min-width: 220px; max-width: 280px">
                 <span style="background:${cat.color}; color:white; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; text-transform:uppercase">${cat.icon} ${cat.label}</span>
-                <strong style="display:block; margin:12px 0 6px; font-size:16px; color:#1a1e26">${e.title}</strong>
-                <p style="font-size:13px; color:#444; margin-bottom:8px">📍 ${e.venue}</p>
-                <p style="font-size:12px; color:#666; margin-bottom:12px">📅 ${e.date}</p>
+                <strong style="display:block; margin:12px 0 4px; font-size:16px; color:#1a1e26">${e.title}</strong>
+                <p style="font-size:13px; color:#444; margin-bottom:4px">📍 ${e.venue}</p>
+                <p style="font-size:12px; color:#666; margin-bottom:8px">📅 ${e.date}</p>
+                
+                ${descHtml}
+                ${galleryHtml}
+
                 <div style="font-weight:800; color:${cat.color}; font-size:1.1rem; margin-bottom:12px">${e.price}</div>
                 <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lng}', '_blank')" 
                         style="background:#4285F4; color:white; border:none; padding:10px; border-radius:10px; width:100%; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px">

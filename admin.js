@@ -15,28 +15,33 @@ let categories = JSON.parse(localStorage.getItem('dakarevents_categories')) || [
 ];
 
 let quartiers = JSON.parse(localStorage.getItem('dakarevents_quartiers')) || [
-    { id: 'plateau', label: 'Plateau', lat: 14.67, lng: -17.44 },
-    { id: 'almadies', label: 'Almadies', lat: 14.75, lng: -17.52 },
-    { id: 'ngor', label: 'Ngor', lat: 14.75, lng: -17.51 },
-    { id: 'ouakam', label: 'Ouakam', lat: 14.72, lng: -17.51 },
-    { id: 'yoff', label: 'Yoff', lat: 14.76, lng: -17.47 },
-    { id: 'medina', label: 'Médina', lat: 14.68, lng: -17.45 },
-    { id: 'point-e', label: 'Point E', lat: 14.69, lng: -17.46 },
-    { id: 'goree', label: 'Île de Gorée', lat: 14.67, lng: -17.40 },
-    { id: 'lac-rose', label: 'Lac Rose', lat: 14.83, lng: -17.23 }
+    { id: 'plateau', label: 'Plateau', lat: 14.67, lng: -17.44, desc: 'Le centre historique et commercial de Dakar.', gallery: ['https://images.unsplash.com/photo-1590059232617-6a848a39f7b3'] },
+    { id: 'almadies', label: 'Almadies', lat: 14.75, lng: -17.52, desc: 'Quartier résidentiel et diplomatique, haut lieu de la vie nocturne.', gallery: [] },
+    { id: 'ngor', label: 'Ngor', lat: 14.75, lng: -17.51, desc: 'Village de pêcheurs et île paradisiaque.', gallery: [] },
+    { id: 'ouakam', label: 'Ouakam', lat: 14.72, lng: -17.51, desc: 'Quartier du Monument de la Renaissance.', gallery: [] },
+    { id: 'yoff', label: 'Yoff', lat: 14.76, lng: -17.47, desc: 'Grande plage et tradition Layène.', gallery: [] },
+    { id: 'medina', label: 'Médina', lat: 14.68, lng: -17.45, desc: 'Quartier culturel et populaire historique.', gallery: [] },
+    { id: 'point-e', label: 'Point E', lat: 14.69, lng: -17.46, desc: 'Quartier résidentiel chic et arboré.', gallery: [] },
+    { id: 'goree', label: 'Île de Gorée', lat: 14.67, lng: -17.40, desc: 'Patrimoine mondial de l\'humanité.', gallery: [] },
+    { id: 'lac-rose', label: 'Lac Rose', lat: 14.83, lng: -17.23, desc: 'Curiosité naturelle et étape mythique du Rallye Dakar.', gallery: [] }
 ];
 
 let approvedEvents = JSON.parse(localStorage.getItem('dakarevents_events')) || [];
 let pendingEvents = JSON.parse(localStorage.getItem('dakarevents_pending')) || [];
 let adminSearchTerm = '';
 
-// Assets Assets
-const demoImages = [
+// Shared Admin Assets (Extended)
+let adminImages = JSON.parse(localStorage.getItem('dakarevents_admin_images')) || [
     'assets/concert1.png',
     'assets/festival1.png',
-    'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80'
+    'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4',
+    'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3',
+    'https://images.unsplash.com/photo-1470225620780-dba8ba36b745',
+    'https://images.unsplash.com/photo-1514525253344-99a3855ff939',
+    'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
+    'https://images.unsplash.com/photo-1506157786151-b8491531f063',
+    'https://images.unsplash.com/photo-1459749411177-042180ce673c',
+    'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4'
 ];
 
 // Shared Sample Data Logic
@@ -65,7 +70,7 @@ function generateSampleData() {
         const eventDate = new Date();
         eventDate.setDate(today.getDate() + Math.floor(Math.random() * 30));
 
-        const demoImg = demoImages[Math.floor(Math.random() * demoImages.length)];
+        const demoImg = adminImages[Math.floor(Math.random() * adminImages.length)];
 
         approvedEvents.push({
             id: i,
@@ -98,16 +103,19 @@ function handleAdminLogin(e) {
 }
 
 function initAdmin() {
-    generateSampleData(); // Ensure initial data exists
+    generateSampleData();
     renderAll();
     setupAdminListeners();
 }
 
 function setupAdminListeners() {
-    document.getElementById('adminSearch').oninput = (e) => {
-        adminSearchTerm = e.target.value.toLowerCase();
-        renderApproved();
-    };
+    const searchInput = document.getElementById('adminSearch');
+    if (searchInput) {
+        searchInput.oninput = (e) => {
+            adminSearchTerm = e.target.value.toLowerCase();
+            renderApproved();
+        };
+    }
 }
 
 function renderAll() {
@@ -143,8 +151,8 @@ function renderCategories() {
             </div></td>
             <td>
                 <div style="display:flex; gap:5px;">
-                    <button class="action-btn" onclick="openEditCategory('${c.id}')"><small>✏️</small></button>
-                    <button class="action-btn btn-delete" onclick="deleteCategory('${c.id}')"><small>🗑️</small></button>
+                    <button class="action-btn" onclick="openEditCategory('${c.id}')">✏️</button>
+                    <button class="action-btn btn-delete" onclick="deleteCategory('${c.id}')">🗑️</button>
                 </div>
             </td>
         </tr>
@@ -187,7 +195,6 @@ function handleCategorySubmit(e) {
     if (oldId) {
         const idx = categories.findIndex(c => c.id === oldId);
         categories[idx] = catData;
-        // Update linked events
         approvedEvents.forEach(ev => { if (ev.category === oldId) ev.category = newId; });
     } else {
         categories.push(catData);
@@ -198,7 +205,7 @@ function handleCategorySubmit(e) {
 }
 
 function deleteCategory(id) {
-    if (confirm("Supprimer cette catégorie ? Les événements liés resteront mais perdront leur style.")) {
+    if (confirm("Supprimer cette catégorie ?")) {
         categories = categories.filter(c => c.id !== id);
         saveCategories();
     }
@@ -211,11 +218,11 @@ function renderQuartiers() {
     list.innerHTML = quartiers.map(q => `
         <tr>
             <td><strong>${q.label}</strong><br><small style="color:var(--text-dim)">ID: ${q.id}</small></td>
-            <td><code>${q.lat}, ${q.lng}</code></td>
+            <td><code>${q.lat}, ${q.lng}</code><br><small style="color:var(--text-dim)">${(q.gallery || []).length} images</small></td>
             <td>
                 <div style="display:flex; gap:5px;">
-                    <button class="action-btn" onclick="openEditQuartier('${q.id}')"><small>✏️</small></button>
-                    <button class="action-btn btn-delete" onclick="deleteQuartier('${q.id}')"><small>🗑️</small></button>
+                    <button class="action-btn" onclick="openEditQuartier('${q.id}')">✏️ Gérer la Fiche</button>
+                    <button class="action-btn btn-delete" onclick="deleteQuartier('${q.id}')">🗑️</button>
                 </div>
             </td>
         </tr>
@@ -227,6 +234,8 @@ function openAddQuartier() {
     document.getElementById('quartierOldId').value = "";
     document.getElementById('quartierId').value = "";
     document.getElementById('quartierLabel').value = "";
+    document.getElementById('quartierDesc').value = "";
+    document.getElementById('quartierGallery').value = "";
     document.getElementById('quartierLat').value = 14.71;
     document.getElementById('quartierLng').value = -17.44;
     document.getElementById('quartierModal').style.display = 'flex';
@@ -235,10 +244,12 @@ function openAddQuartier() {
 function openEditQuartier(id) {
     const q = quartiers.find(item => item.id === id);
     if (!q) return;
-    document.getElementById('quartierModalTitle').textContent = "Modifier Lieu";
+    document.getElementById('quartierModalTitle').textContent = "Modifier la Fiche : " + q.label;
     document.getElementById('quartierOldId').value = q.id;
     document.getElementById('quartierId').value = q.id;
     document.getElementById('quartierLabel').value = q.label;
+    document.getElementById('quartierDesc').value = q.desc || "";
+    document.getElementById('quartierGallery').value = (q.gallery || []).join(', ');
     document.getElementById('quartierLat').value = q.lat;
     document.getElementById('quartierLng').value = q.lng;
     document.getElementById('quartierModal').style.display = 'flex';
@@ -248,11 +259,14 @@ function handleQuartierSubmit(e) {
     e.preventDefault();
     const oldId = document.getElementById('quartierOldId').value;
     const newId = document.getElementById('quartierId').value;
+    const galleryStr = document.getElementById('quartierGallery').value;
     const qData = {
         id: newId,
         label: document.getElementById('quartierLabel').value,
+        desc: document.getElementById('quartierDesc').value,
         lat: parseFloat(document.getElementById('quartierLat').value),
-        lng: parseFloat(document.getElementById('quartierLng').value)
+        lng: parseFloat(document.getElementById('quartierLng').value),
+        gallery: galleryStr ? galleryStr.split(',').map(s => s.trim()).filter(s => s !== "") : []
     };
 
     if (oldId) {
@@ -274,19 +288,50 @@ function deleteQuartier(id) {
     }
 }
 
-// --- IMAGES GALLERY ---
+// --- IMAGES LIBRARY ---
 function renderImagesGallery() {
     const container = document.getElementById('imagesGallery');
     if (!container) return;
-    container.innerHTML = demoImages.map(url => `
-        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+    container.innerHTML = adminImages.map((url, idx) => `
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative;" class="img-card">
             <div style="height:120px; background-image:url('${url}'); background-size:cover; background-position:center;"></div>
-            <div style="padding:10px; font-size:0.7rem; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis;">${url}</div>
+            <div style="padding:10px; font-size:0.65rem; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${url}</div>
+            <button onclick="deleteAdminImage(${idx})" style="position:absolute; top:5px; right:5px; background:rgba(231,76,60,0.8); border:none; color:white; border-radius:4px; cursor:pointer; width:24px; height:24px;">×</button>
         </div>
     `).join('');
 }
 
-// --- STANDARD EVENTS LOGIC ---
+function handleAdminUpload(e) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const promises = [];
+    for (let file of files) {
+        promises.push(new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                adminImages.unshift(event.target.result);
+                resolve();
+            };
+            reader.readAsDataURL(file);
+        }));
+    }
+
+    Promise.all(promises).then(() => {
+        saveAdminImages();
+        renderImagesGallery();
+    });
+}
+
+function deleteAdminImage(idx) {
+    if (confirm("Supprimer cette image de la bibliothèque ?")) {
+        adminImages.splice(idx, 1);
+        saveAdminImages();
+        renderImagesGallery();
+    }
+}
+
+// --- EVENTS ---
 function renderPending() {
     const list = document.getElementById('pendingList');
     if (!list) return;
@@ -404,10 +449,14 @@ function openEdit(id) {
     document.getElementById('editTitle').value = event.title;
     document.getElementById('editDate').value = event.date;
     document.getElementById('editVenue').value = event.venue;
+    document.getElementById('editImage').value = event.image || "";
     document.getElementById('editEventModal').style.display = 'flex';
 }
 
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.style.display = 'none';
+}
 
 function handleEditSubmit(e) {
     e.preventDefault();
@@ -417,6 +466,7 @@ function handleEditSubmit(e) {
         approvedEvents[index].title = document.getElementById('editTitle').value;
         approvedEvents[index].date = document.getElementById('editDate').value;
         approvedEvents[index].venue = document.getElementById('editVenue').value;
+        approvedEvents[index].image = document.getElementById('editImage').value;
         saveData();
         closeModal('editEventModal');
     }
@@ -426,7 +476,7 @@ function showTab(tab) {
     const tabs = ['dashboardTab', 'pendingTab', 'eventsTab', 'categoriesTab', 'quartiersTab', 'imagesTab'];
     tabs.forEach(t => {
         const el = document.getElementById(t);
-        if (el) el.style.display = t.startsWith(tab) ? 'block' : 'none';
+        if (el) el.style.display = (t === tab + 'Tab') ? 'block' : 'none';
     });
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -451,6 +501,10 @@ function saveQuartiers() {
     renderAll();
 }
 
+function saveAdminImages() {
+    localStorage.setItem('dakarevents_admin_images', JSON.stringify(adminImages));
+}
+
 // Global Exports
 window.handleAdminLogin = handleAdminLogin;
 window.showTab = showTab;
@@ -468,3 +522,5 @@ window.openAddQuartier = openAddQuartier;
 window.openEditQuartier = openEditQuartier;
 window.handleQuartierSubmit = handleQuartierSubmit;
 window.deleteQuartier = deleteQuartier;
+window.handleAdminUpload = handleAdminUpload;
+window.deleteAdminImage = deleteAdminImage;
