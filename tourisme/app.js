@@ -1,7 +1,9 @@
 // ===================================
 // CONFIGURATION DES DONNÉES TOURISME
 // ===================================
-const categories = [
+// Use shared categories from Admin Panel if available, otherwise default
+const savedCategories = JSON.parse(localStorage.getItem('dakarevents_categories'));
+const categories = savedCategories || [
     { id: 'hotels', label: 'Hôtels & Resorts', color: '#FF5A5F', icon: '🏨' },
     { id: 'auberges', label: 'Auberges', color: '#f39c12', icon: '🏠' },
     { id: 'sites', label: 'Sites Historiques', color: '#484848', icon: '🏛️' },
@@ -53,7 +55,54 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('tourisme_v9', 'true');
         tourismData = [];
     }
-    generateSampleData();
+    // IMPORT DATA FROM ADMIN PANEL (EVENTS & QUARTIERS)
+    const adminEvents = JSON.parse(localStorage.getItem('dakarevents_events')) || [];
+    const adminQuartiers = JSON.parse(localStorage.getItem('dakarevents_quartiers')) || [];
+
+    // Merge Admin Data into Tourism Logic (if desirable)
+    // For now, we mix them into "tourismData" or we prioritize them.
+    // Let's simpler: add Admin Events as "Points of Interest"
+    if (adminEvents.length > 0) {
+        adminEvents.forEach(e => {
+            tourismData.push({
+                id: `admin-${e.id}`,
+                name: e.title,
+                category: e.category,
+                region: 'dakar', // Simplify to Dakar region for now or deduce
+                lat: e.lat,
+                lng: e.lng,
+                image: e.image,
+                desc: `Événement: ${e.date} @ ${e.venue}`,
+                gallery: [], // events might not have galleries yet
+                price: e.price
+            });
+        });
+    }
+
+    // Add Quartiers as specific Sites
+    if (adminQuartiers.length > 0) {
+        adminQuartiers.forEach(q => {
+            const alreadyExists = tourismData.find(t => t.lat === q.lat && t.lng === q.lng);
+            if (!alreadyExists) {
+                tourismData.push({
+                    id: `quartier-${q.id}`,
+                    name: q.label,
+                    category: 'sites', // Default to site
+                    region: 'dakar',
+                    lat: q.lat,
+                    lng: q.lng,
+                    image: (q.gallery && q.gallery[0]) || 'assets/festival1.png',
+                    desc: q.desc || "Un lieu emblématique de Dakar.",
+                    gallery: q.gallery || [],
+                    price: "Accès Libre"
+                });
+            }
+        });
+    }
+
+    // generateSampleData(); // Only if empty, but we might have just filled it with admin data.
+    if (tourismData.length === 0) generateSampleData();
+
     initUI();
     setupMapLegend();
     renderLocations();
