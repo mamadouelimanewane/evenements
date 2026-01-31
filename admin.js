@@ -1,4 +1,4 @@
-const ADMIN_CODE = "DAKAR2026";
+const ADMIN_CODE = "Astelwane";
 
 let categories = JSON.parse(localStorage.getItem('dakarevents_categories')) || [];
 let approvedEvents = JSON.parse(localStorage.getItem('dakarevents_events')) || [];
