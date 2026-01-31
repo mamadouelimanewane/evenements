@@ -22,18 +22,18 @@
             font-family: 'Outfit', sans-serif;
         }
 
-        /* Login Wall */
-        #loginWall {
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: var(--admin-bg);
-            z-index: 10000;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 10000;
         }
 
         .admin-layout {
@@ -47,6 +47,9 @@
             background: var(--admin-card);
             border-right: 1px solid var(--border);
             padding: 2rem;
+            height: 100vh;
+            position: sticky;
+            top: 0;
         }
 
         .admin-content {
@@ -73,6 +76,12 @@
             border-radius: 12px;
             cursor: pointer;
             margin-bottom: 5px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .tab-btn.active {
@@ -81,68 +90,41 @@
             font-weight: 700;
         }
 
-        .form-card {
+        .stat-card {
             background: var(--admin-card);
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 20px;
             border: 1px solid var(--border);
-            margin-bottom: 2rem;
-        }
-
-        .form-input,
-        .form-select {
-            width: 100%;
-            padding: 12px;
-            background: #0F1115;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: white;
-            margin-top: 5px;
-        }
-
-        .btn-primary {
-            background: var(--admin-accent);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 10px;
-            border: none;
-            font-weight: 700;
-            cursor: pointer;
         }
 
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
+            background: var(--admin-card);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
         }
 
         .data-table th {
             text-align: left;
             color: var(--text-dim);
-            padding: 12px;
+            padding: 15px;
             border-bottom: 1px solid var(--border);
             font-size: 0.8rem;
             text-transform: uppercase;
         }
 
         .data-table td {
-            padding: 12px;
+            padding: 15px;
             border-bottom: 1px solid var(--border);
         }
 
-        .pending-badge {
-            background: #F1C40F;
-            color: black;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 700;
-        }
-
         .image-preview {
-            width: 80px;
-            height: 50px;
+            width: 60px;
+            height: 40px;
             background-size: cover;
+            background-position: center;
             border-radius: 6px;
         }
 
@@ -153,6 +135,13 @@
             background: transparent;
             color: white;
             cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            border-color: white;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .btn-approve {
@@ -164,101 +153,179 @@
             border-color: #E74C3C;
             color: #E74C3C;
         }
+
+        .btn-primary {
+            background: var(--admin-accent);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .modal-content {
+            background: var(--admin-card);
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border);
+        }
     </style>
 </head>
 
 <body>
     <!-- Login Screen -->
-    <div id="loginWall">
-        <div class="modal-content" style="max-width: 350px;">
-            <div class="brand" style="margin-bottom: 2rem; justify-content: center;">
-                <span class="logo-dot"></span>
-                <h1>ADMIN<span>Dakar</span></h1>
-            </div>
+    <div id="loginWall" class="modal-overlay">
+        <div class="modal-content" style="max-width: 350px; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🔐</div>
+            <h2 style="margin-bottom: 0.5rem;">Administration</h2>
+            <p style="color: var(--text-dim); margin-bottom: 2rem;">Accès réservé aux gestionnaires.</p>
             <form onsubmit="handleAdminLogin(event)">
-                <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label>Code d'accès administrateur</label>
-                    <input type="password" id="adminPass" class="form-input" required placeholder="••••••••">
-                </div>
-                <button type="submit" class="btn-primary" style="width: 100%;">Se Connecter</button>
+                <input type="password" id="adminPass" class="form-input" required placeholder="Code Secret"
+                    style="text-align: center; font-size: 1.2rem; letter-spacing: 4px;">
+                <p id="loginError" style="color: #E74C3C; font-size: 0.8rem; margin-top: 1rem; display: none;">Code
+                    incorrect.</p>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 2rem;">Connexion</button>
             </form>
-            <p id="loginError"
-                style="color: #E74C3C; font-size: 0.8rem; margin-top: 1rem; display: none; text-align: center;">Code
-                incorrect.</p>
         </div>
     </div>
 
-    <!-- main Admin Layout -->
+    <!-- Main Admin Layout -->
     <div class="admin-layout" id="adminLayout">
         <aside class="admin-sidebar">
             <div class="brand" style="margin-bottom: 3rem;">
                 <span class="logo-dot"></span>
-                <h1>ADMIN<span>Panel</span></h1>
+                <h1>ADMIN<span>Events</span></h1>
             </div>
             <nav>
-                <button class="tab-btn active" onclick="showTab('pending')">📥 Soumissions (En attente)</button>
-                <button class="tab-btn" onclick="showTab('events')">✅ Événements en ligne</button>
-                <button class="tab-btn" onclick="showTab('categories')">🏷️ Catégories</button>
+                <button class="tab-btn active" id="tab-dashboard" onclick="showTab('dashboard')">📊 Dashboard</button>
+                <button class="tab-btn" id="tab-pending" onclick="showTab('pending')">📥 Attente (<span
+                        id="pendingCount">0</span>)</button>
+                <button class="tab-btn" id="tab-events" onclick="showTab('events')">✅ Événements</button>
                 <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
-                <a href="index.html" style="color: var(--text-dim); text-decoration: none; padding-left: 12px;">🌍
+                <a href="index.html"
+                    style="color: var(--text-dim); text-decoration: none; padding-left: 12px; font-size: 0.9rem;">🌍
                     Retour au site</a>
             </nav>
         </aside>
 
         <main class="admin-content">
-            <!-- TAB: PENDING -->
-            <div id="pendingTab">
+            <!-- TAB: DASHBOARD -->
+            <div id="dashboardTab">
                 <div class="admin-header">
-                    <h2>Soumissions à valider</h2>
+                    <h2>Tableau de Bord</h2>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Image</th>
-                            <th>Événement</th>
-                            <th>Auteur / Tel</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pendingList"></tbody>
-                </table>
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+                    <div class="stat-card">
+                        <p style="color: var(--text-dim); font-size: 0.9rem;">Total Événements</p>
+                        <h2 id="statTotal" style="font-size: 2.5rem; color: var(--admin-accent);">0</h2>
+                    </div>
+                    <div class="stat-card">
+                        <p style="color: var(--text-dim); font-size: 0.9rem;">Soumissions</p>
+                        <h2 id="statPending" style="font-size: 2.5rem; color: #F1C40F;">0</h2>
+                    </div>
+                    <div class="stat-card">
+                        <p style="color: var(--text-dim); font-size: 0.9rem;">Lieux Uniques</p>
+                        <h2 id="statVenues" style="font-size: 2.5rem; color: #3498DB;">0</h2>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem;">
+                    <div class="form-card"
+                        style="background: var(--admin-card); padding: 2rem; border-radius: 20px; border: 1px solid var(--border);">
+                        <h3>Répartition par Catégorie</h3>
+                        <div id="categoryChart"
+                            style="display:flex; flex-direction:column; gap:12px; margin-top:1.5rem;"></div>
+                    </div>
+                    <div class="form-card"
+                        style="background: var(--admin-card); padding: 2rem; border-radius: 20px; border: 1px solid var(--border);">
+                        <h3>Top Lieux</h3>
+                        <div id="venueChart" style="display:flex; flex-direction:column; gap:12px; margin-top:1.5rem;">
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- TAB: EVENTS (Approved) -->
+            <!-- TAB: PENDING -->
+            <div id="pendingTab" style="display: none;">
+                <h2>Soumissions à valider</h2>
+                <div style="margin-top: 2rem;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Événement</th>
+                                <th>Contact</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: EVENTS -->
             <div id="eventsTab" style="display: none;">
                 <div class="admin-header">
                     <h2>Événements en ligne</h2>
-                    <button class="btn-primary" onclick="toggleForm('eventForm')">+ Nouvel Événement</button>
-                </div>
-                <div id="eventForm" class="form-card" style="display: none;">
-                    <h3>Ajouter directement</h3>
-                    <form onsubmit="handleAdminEventSubmit(event)">
-                        <!-- Mêmes champs que précédemment... -->
-                        <div class="form-group"><label>Titre</label><input type="text" id="adminEventTitle"
-                                class="form-input" required></div>
-                        <button type="submit" class="btn-primary">Publier</button>
-                        <button type="button" class="action-btn" onclick="toggleForm('eventForm')">Annuler</button>
-                    </form>
+                    <div class="search-box"
+                        style="background: var(--admin-card); border: 1px solid var(--border); padding: 8px 15px; border-radius: 12px;">
+                        <input type="text" id="adminSearch" placeholder="Rechercher..."
+                            style="background:transparent; border:none; color:white; outline:none;">
+                    </div>
                 </div>
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>Image</th>
                             <th>Titre</th>
-                            <th>Catégorie</th>
+                            <th>Détails</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="approvedList"></tbody>
                 </table>
             </div>
-
-            <!-- TAB: CATEGORIES -->
-            <div id="categoriesTab" style="display: none;">
-                <h2>Catégories</h2>
-                <!-- Interface simplifiée... -->
-            </div>
         </main>
+    </div>
+
+    <!-- MODAL: Edit Event -->
+    <div id="editEventModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Modifier l'Événement</h3>
+            <form onsubmit="handleEditSubmit(event)" style="margin-top: 1.5rem;">
+                <input type="hidden" id="editId">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Titre</label>
+                    <input type="text" id="editTitle" class="form-input" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="text" id="editDate" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Lieu</label>
+                        <input type="text" id="editVenue" class="form-input" required>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 2rem;">
+                    <button type="button" class="action-btn" onclick="closeEdit()" style="flex:1">Annuler</button>
+                    <button type="submit" class="btn-primary" style="flex:2">Enregistrer</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="admin.js"></script>

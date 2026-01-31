@@ -48,6 +48,12 @@ let currentView = 'map';
 // INITIALISATION
 // ===================================
 document.addEventListener('DOMContentLoaded', () => {
+    // Force refresh sample data to include new images
+    if (!localStorage.getItem('dakarevents_v2')) {
+        localStorage.removeItem('dakarevents_events');
+        localStorage.setItem('dakarevents_v2', 'true');
+        eventsData = [];
+    }
     generateSampleData();
     initUI();
     setupMapLegend();
@@ -81,6 +87,17 @@ function generateSampleData() {
         const eventDate = new Date();
         eventDate.setDate(today.getDate() + Math.floor(Math.random() * 30));
 
+        // Assign demonstration images
+        let demoImage = null;
+        if (cat.id === 'culture' || cat.id === 'patrimoine') {
+            demoImage = 'assets/festival1.png';
+        } else if (cat.id === 'sports') {
+            demoImage = 'assets/concert1.png'; // Reusing concert for some variety if needed, or just leave it
+        } else {
+            // Randomly assign one of the two for others
+            demoImage = Math.random() > 0.5 ? 'assets/concert1.png' : 'assets/festival1.png';
+        }
+
         eventsData.push({
             id: i,
             title: title,
@@ -92,6 +109,7 @@ function generateSampleData() {
             lat: quartier.lat + (Math.random() - 0.5) * 0.03,
             lng: quartier.lng + (Math.random() - 0.5) * 0.03,
             price: i % 3 === 0 ? "Gratuit" : `${(Math.floor(Math.random() * 10) + 2) * 1000} FCFA`,
+            image: demoImage,
             status: 'approved' // Pour qu'ils soient visibles immédiatement
         });
     }
