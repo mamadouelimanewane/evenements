@@ -56,13 +56,21 @@ function createAdminCard(loc, isPending) {
         </div>
         <div class="card-info">
             <h3 class="card-title">${loc.title}</h3>
-            <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1rem;">📍 ${loc.venue}</p>
+            <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 0.5rem;">📍 ${loc.venue}</p>
+            ${loc.phone ? `<p style="color: var(--primary); font-size: 0.85rem; font-weight:700;">📞 ${loc.phone}</p>` : ''}
+            ${loc.price ? `<p style="color: #2ECC71; font-size: 0.9rem; font-weight:800; margin-bottom:1rem;">🏷️ ${loc.price}</p>` : ''}
             
+            ${loc.gallery && loc.gallery.length > 0 ? `
+                <div style="display:flex; gap:5px; margin-bottom:15px; overflow-x:auto;">
+                    ${loc.gallery.map(img => `<img src="${img}" style="width:50px; height:40px; object-fit:cover; border-radius:4px;">`).join('')}
+                </div>
+            ` : ''}
+
             ${isPending && loc.submittedBy ? `
                 <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; margin-bottom: 15px;">
-                    <p style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; font-weight: 800;">Proposé par :</p>
+                    <p style="font-size: 0.75rem; color: #94A3B8; text-transform: uppercase; font-weight: 800;">Soumis par :</p>
                     <p style="font-weight: 600; font-size: 0.9rem;">${loc.submittedBy.name}</p>
-                    <p style="color: var(--text-dim); font-size: 0.85rem;">📞 ${loc.submittedBy.phone}</p>
+                    <p style="color: #94A3B8; font-size: 0.85rem;">📞 ${loc.submittedBy.phone}</p>
                 </div>
             ` : ''}
 

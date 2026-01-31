@@ -215,9 +215,19 @@
                         <input type="text" id="pubAddress" class="form-input" required>
                     </div>
                 </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Téléphone du lieu</label>
+                        <input type="tel" id="pubPhone" class="form-input" placeholder="Ex: +221 33...">
+                    </div>
+                    <div class="form-group">
+                        <label>Prix nuitée (FCFA)</label>
+                        <input type="text" id="pubPrice" class="form-input" placeholder="Ex: 45.000">
+                    </div>
+                </div>
                 <div class="form-group">
-                    <label>Image</label>
-                    <input type="file" id="pubImage" accept="image/*" class="form-input">
+                    <label>Photos (Sélectionnez-en plusieurs)</label>
+                    <input type="file" id="pubImage" accept="image/*" class="form-input" multiple>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 2rem;">
                     <button type="button" class="action-btn" onclick="closeModal('submitLocationModal')"

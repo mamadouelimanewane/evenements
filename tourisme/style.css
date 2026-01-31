@@ -308,6 +308,26 @@ body {
     gap: 8px;
 }
 
+/* Mini Gallery in Card */
+.mini-gallery::-webkit-scrollbar {
+    height: 4px;
+}
+
+.mini-gallery::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+}
+
+.mini-gallery img {
+    transition: transform 0.2s;
+    border: 1px solid var(--border);
+}
+
+.mini-gallery img:hover {
+    transform: scale(1.1);
+    z-index: 10;
+}
+
 /* Map Styling */
 .map-view-container {
     height: 100%;

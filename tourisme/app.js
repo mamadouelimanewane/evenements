@@ -3,6 +3,7 @@
 // ===================================
 const categories = [
     { id: 'hotels', label: 'Hôtels & Resorts', color: '#FF5A5F', icon: '🏨' },
+    { id: 'auberges', label: 'Auberges', color: '#f39c12', icon: '🏠' },
     { id: 'sites', label: 'Sites Historiques', color: '#484848', icon: '🏛️' },
     { id: 'nature', label: 'Parcs & Réserves', color: '#2ECC71', icon: '🌳' },
     { id: 'plages', label: 'Plages', color: '#3498DB', icon: '🏖️' },
@@ -13,6 +14,7 @@ const categories = [
     { id: 'monuments', label: 'Monuments', color: '#7F8C8D', icon: '🗿' },
     { id: 'excursions', label: 'Excursions', color: '#1ABC9C', icon: '🚐' }
 ];
+
 
 const regions = [
     { id: 'dakar', label: 'Dakar & Environs', lat: 14.71, lng: -17.44 },
@@ -60,6 +62,7 @@ function generateSampleData() {
 
     const names = {
         hotels: ["King Fahd Palace", "Terrou-Bi Resort", "Lamantin Beach Resort", "Royal Decameron Baobab", "Hôtel de la Poste Saint-Louis", "Ecolodge de Simal", "Esperanto Lodge Kafountine"],
+        auberges: ["Auberge du Désert", "Auberge Marie-Lucien", "Le Campement du Saloum", "Auberge de la Plage", "Auberge Culturelle"],
         sites: ["Île de Gorée", "Quartier Colonial Saint-Louis", "Maison des Esclaves", "Fort d'Estrées", "Vestiges de Carabane"],
         nature: ["Parc National du Niokolo-Koba", "Réserve de Bandia", "Djoudj Bird Sanctuary", "Forêt de Casamance", "Delta du Saloum"],
         plages: ["Plage des Almadies", "Plage de Cap Skirring", "Plage de Toubab Dialaw", "Plage de Popenguine", "Plage de Ngor"],
@@ -77,6 +80,7 @@ function generateSampleData() {
             const list = names[cat.id];
             if (list) {
                 list.forEach(name => {
+                    const isHotelOrAuberge = cat.id === 'hotels' || cat.id === 'auberges';
                     tourismData.push({
                         id: counter++,
                         title: `${name} - ${reg.label}`,
@@ -85,8 +89,9 @@ function generateSampleData() {
                         region: reg.id,
                         lat: reg.lat + (Math.random() - 0.5) * 0.1,
                         lng: reg.lng + (Math.random() - 0.5) * 0.1,
-                        price: cat.id === 'hotels' ? "A partir de 45.000 FCFA" : "Prix variable",
-                        image: null,
+                        price: isHotelOrAuberge ? `${(Math.floor(Math.random() * 5) + 2) * 10000} FCFA` : "Prix variable",
+                        phone: isHotelOrAuberge ? `+221 33 ${Math.floor(100 + Math.random() * 900)} ${Math.floor(10 + Math.random() * 89)} ${Math.floor(10 + Math.random() * 89)}` : null,
+                        gallery: [], // Initialisé vide
                         status: 'approved'
                     });
                 });
@@ -203,20 +208,35 @@ function setupEventListeners() {
 }
 
 function submitPendingLocation(e) {
-    const file = document.getElementById('pubImage').files[0];
-    const reader = new FileReader();
+    const files = document.getElementById('pubImage').files;
+    const promises = [];
+    const gallery = [];
 
-    reader.onload = function (event) {
+    for (let i = 0; i < files.length; i++) {
+        promises.push(new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                gallery.push(event.target.result);
+                resolve();
+            };
+            reader.readAsDataURL(files[i]);
+        }));
+    }
+
+    Promise.all(promises).then(() => {
         const pending = {
             id: Date.now(),
             title: document.getElementById('pubTitle').value,
             category: document.getElementById('pubCategory').value,
             region: document.getElementById('pubRegion').value,
             venue: document.getElementById('pubAddress').value,
-            image: event.target.result,
+            phone: document.getElementById('pubPhone').value,
+            price: document.getElementById('pubPrice').value ? `${document.getElementById('pubPrice').value} FCFA` : null,
+            image: gallery[0] || null, // Image principale
+            gallery: gallery,
             status: 'pending',
             submittedBy: currentUser,
-            lat: 14.7, lng: -17.4 // Default Dakar
+            lat: 14.7, lng: -17.4
         };
 
         const allPending = JSON.parse(localStorage.getItem('senegaltourisme_pending')) || [];
@@ -226,10 +246,7 @@ function submitPendingLocation(e) {
         alert("Merci ! Votre suggestion a été envoyée pour validation.");
         closeModal('submitLocationModal');
         e.target.reset();
-    };
-
-    if (file) reader.readAsDataURL(file);
-    else reader.onload({ target: { result: null } });
+    });
 }
 
 function renderLocations() {
@@ -258,6 +275,13 @@ function renderLocations() {
             const card = document.createElement('div');
             card.className = 'event-card';
             card.style.borderTop = `4px solid ${catInfo.color}`;
+
+            const galleryHtml = loc.gallery && loc.gallery.length > 0
+                ? `<div class="mini-gallery" style="display:flex; gap:5px; margin-top:10px; overflow-x:auto; padding-bottom:5px;">
+                    ${loc.gallery.map(img => `<img src="${img}" style="width:60px; height:45px; object-fit:cover; border-radius:4px; flex-shrink:0;">`).join('')}
+                   </div>`
+                : '';
+
             const bgStyle = loc.image ? `url('${loc.image}')` : `linear-gradient(135deg, ${catInfo.color}22, ${catInfo.color}44)`;
 
             card.innerHTML = `
@@ -268,9 +292,12 @@ function renderLocations() {
                     <h3 class="card-title">${loc.title}</h3>
                     <div class="card-meta">
                         <div class="meta-item"><span>📌 ${loc.venue}</span></div>
+                        ${loc.phone ? `<div class="meta-item" style="color:var(--primary); font-weight:700;"><span>📞 ${loc.phone}</span></div>` : ''}
+                        ${loc.price ? `<div class="meta-item" style="font-size:1.1rem; color:var(--secondary); font-weight:800; margin-top:5px;"><span>🏷️ ${loc.price} / nuit</span></div>` : ''}
                     </div>
+                    ${galleryHtml}
                     <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}', '_blank')" 
-                            style="margin-top: 15px; width: 100%; padding: 10px; border-radius: 10px; border: none; background: #4285F4; color: white; font-weight: 700; cursor: pointer;">
+                            style="margin-top: 15px; width: 100%; padding: 12px; border-radius: 10px; border: none; background: #4285F4; color: white; font-weight: 700; cursor: pointer;">
                         Itinéraire Google Maps
                     </button>
                 </div>
@@ -327,10 +354,18 @@ function updateMapMarkers(data) {
         const marker = L.circleMarker([loc.lat, loc.lng], { radius: 10, fillColor: cat.color, color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
 
         marker.bindPopup(`
-            <div style="padding: 10px; min-width: 180px">
-                <strong style="display:block; margin-bottom: 5px">${loc.title}</strong>
-                <span style="font-size:12px; color:#666">${cat.icon} ${cat.label}</span><br>
-                <span style="font-size:12px; color:#444">📍 ${loc.venue}</span>
+            <div style="padding: 10px; min-width: 200px">
+                <strong style="display:block; margin-bottom: 5px; font-size: 1.1rem;">${loc.title}</strong>
+                <span style="font-size:12px; color:#94A3B8; display:block; margin-bottom:8px;">${cat.icon} ${cat.label}</span>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <span style="font-size:13px; color:#fff">📍 ${loc.venue}</span>
+                    ${loc.phone ? `<span style="font-size:13px; color:var(--primary); font-weight:700;">📞 ${loc.phone}</span>` : ''}
+                    ${loc.price ? `<span style="font-size:14px; color:#2ECC71; font-weight:800; margin-top:5px;">🏷️ ${loc.price} / nuit</span>` : ''}
+                </div>
+                <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}', '_blank')" 
+                        style="margin-top: 15px; width: 100%; padding: 8px; border-radius: 8px; border: none; background: #4285F4; color: white; font-weight: 700; cursor: pointer;">
+                    Itinéraire Maps
+                </button>
             </div>
         `);
         markers.push(marker);
